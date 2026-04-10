@@ -8,7 +8,7 @@ interface HeaderProps {
 
 const HeaderContainer = styled.header`
   height: 56px;
-  background: #ffffff;
+ background: ${({ theme }) => theme.bg.primary};
   border-bottom: 1px solid #e5e7eb;
 
   display: flex;

@@ -1,15 +1,22 @@
 import { createGlobalStyle } from "styled-components";
-
 export const GlobalStyles = createGlobalStyle`
   *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
+  
+  html, body, #root {
+    height: 100%;
+  }
+  
+  #root {
+  background: ${({ theme }) => theme.bg.primary};
+}
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: ${({ theme }) => theme.bg.tertiary};
+   background: ${({ theme }) => theme.bg.primary};
     color: ${({ theme }) => theme.text.primary};
     font-size: 14px;
     line-height: 1.6;
