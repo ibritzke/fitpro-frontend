@@ -3,54 +3,111 @@ import styled from "styled-components";
 import { api } from "../../services/api";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import { Input, InputWrapper, Label, Select } from "../../components/ui/Input";
+import {
+  Input,
+  InputWrapper,
+  Label,
+  Select,
+} from "../../components/ui/Input";
+
+/* ===================== HEADER ===================== */
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 `;
 
-const PageTitle = styled.h1`font-size: 22px; font-weight: 600;`;
+const PageTitle = styled.h1`
+  font-size: 18px;
+  font-weight: 600;
+
+  @media (min-width: 769px) {
+    font-size: 22px;
+  }
+`;
+
+/* ===================== FILTERS ===================== */
 
 const Filters = styled.div`
   display: flex;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 `;
 
-const List = styled.div`display: flex; flex-direction: column; gap: 8px;`;
+/* ===================== LIST ===================== */
+
+const List = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
 
 const Item = styled(Card)`
-  padding: 14px 18px;
+  padding: 12px 14px;
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
+
+  @media (min-width: 769px) {
+    padding: 14px 18px;
+  }
 `;
 
-const ItemInfo = styled.div``;
-const ItemName = styled.p`font-size: 14px; font-weight: 500;`;
-const ItemSub = styled.p`font-size: 12px; color: ${({ theme }) => theme.text.secondary};`;
+const ItemInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
 
-const Actions = styled.div`display: flex; gap: 8px;`;
+const ItemName = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+`;
+
+const ItemSub = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.text.secondary};
+`;
+
+/* ===================== ACTIONS ===================== */
+
+const Actions = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
 
 const DeleteBtn = styled.button`
   color: ${({ theme }) => theme.accent.danger};
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 4px;
-  &:hover { background: ${({ theme }) => theme.accent.danger}15; }
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => `${theme.accent.danger}15`};
+  }
 `;
+
+/* ===================== MODAL ===================== */
 
 const Modal = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 16px;
 `;
 
 const ModalBox = styled(Card)`
@@ -61,16 +118,32 @@ const ModalBox = styled(Card)`
   gap: 16px;
 `;
 
-const ModalTitle = styled.h2`font-size: 17px; font-weight: 600;`;
+const ModalTitle = styled.h2`
+  font-size: 16px;
+  font-weight: 600;
+`;
 
-interface Category { id: string; name: string; }
-interface Subcategory { id: string; name: string; categoryId: string; }
+/* ===================== TYPES ===================== */
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Subcategory {
+  id: string;
+  name: string;
+  categoryId: string;
+}
+
 interface Exercise {
   id: string;
   name: string;
   category: Category;
   subcategory?: Subcategory;
 }
+
+/* ===================== COMPONENT ===================== */
 
 const Exercises: React.FC = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -82,6 +155,8 @@ const Exercises: React.FC = () => {
   const [categoryId, setCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
   const [loading, setLoading] = useState(false);
+
+  /* ===== LÓGICA ORIGINAL (NÃO ALTERADA) ===== */
 
   const fetchExercises = async () => {
     const res = await api.get("/exercises", {
@@ -101,9 +176,17 @@ const Exercises: React.FC = () => {
     setSubcategories(res.data);
   };
 
-  useEffect(() => { fetchCategories(); }, []);
-  useEffect(() => { fetchExercises(); }, [filterCat]);
-  useEffect(() => { fetchSubcategories(categoryId); }, [categoryId]);
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchExercises();
+  }, [filterCat]);
+
+  useEffect(() => {
+    fetchSubcategories(categoryId);
+  }, [categoryId]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +198,9 @@ const Exercises: React.FC = () => {
         subcategoryId: subcategoryId || undefined,
       });
       setShowModal(false);
-      setName(""); setCategoryId(""); setSubcategoryId("");
+      setName("");
+      setCategoryId("");
+      setSubcategoryId("");
       fetchExercises();
     } finally {
       setLoading(false);
@@ -128,11 +213,15 @@ const Exercises: React.FC = () => {
     fetchExercises();
   };
 
+  /* ===================== JSX ===================== */
+
   return (
     <div>
       <Header>
         <PageTitle>Exercícios</PageTitle>
-        <Button onClick={() => setShowModal(true)}>+ Novo exercício</Button>
+        <Button onClick={() => setShowModal(true)}>
+          + Novo exercício
+        </Button>
       </Header>
 
       <Filters>
@@ -143,7 +232,9 @@ const Exercises: React.FC = () => {
         >
           <option value="">Todas as categorias</option>
           {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
           ))}
         </Select>
       </Filters>
@@ -158,13 +249,23 @@ const Exercises: React.FC = () => {
                 {ex.subcategory ? ` · ${ex.subcategory.name}` : ""}
               </ItemSub>
             </ItemInfo>
+
             <Actions>
-              <DeleteBtn onClick={() => handleDelete(ex.id)}>Excluir</DeleteBtn>
+              <DeleteBtn onClick={() => handleDelete(ex.id)}>
+                Excluir
+              </DeleteBtn>
             </Actions>
           </Item>
         ))}
+
         {exercises.length === 0 && (
-          <p style={{ color: "#888", textAlign: "center", padding: 32 }}>
+          <p
+            style={{
+              color: "#888",
+              textAlign: "center",
+              padding: 32,
+            }}
+          >
             Nenhum exercício cadastrado.
           </p>
         )}
@@ -174,25 +275,48 @@ const Exercises: React.FC = () => {
         <Modal onClick={() => setShowModal(false)}>
           <ModalBox onClick={(e) => e.stopPropagation()}>
             <ModalTitle>Novo exercício</ModalTitle>
-            <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+            <form
+              onSubmit={handleCreate}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+              }}
+            >
               <InputWrapper>
                 <Label>Categoria *</Label>
-                <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
+                <Select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  required
+                >
                   <option value="">Selecione...</option>
                   {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
                   ))}
                 </Select>
               </InputWrapper>
+
               <InputWrapper>
                 <Label>Subcategoria</Label>
-                <Select value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)}>
+                <Select
+                  value={subcategoryId}
+                  onChange={(e) =>
+                    setSubcategoryId(e.target.value)
+                  }
+                >
                   <option value="">Selecione...</option>
                   {subcategories.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
                 </Select>
               </InputWrapper>
+
               <InputWrapper>
                 <Label>Nome do exercício *</Label>
                 <Input
@@ -202,11 +326,21 @@ const Exercises: React.FC = () => {
                   required
                 />
               </InputWrapper>
+
               <div style={{ display: "flex", gap: 10 }}>
-                <Button type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => setShowModal(false)}
+                >
                   Cancelar
                 </Button>
-                <Button type="submit" fullWidth loading={loading}>
+                <Button
+                  type="submit"
+                  fullWidth
+                  loading={loading}
+                >
                   Criar
                 </Button>
               </div>

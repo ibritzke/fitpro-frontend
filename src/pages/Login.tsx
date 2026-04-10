@@ -6,58 +6,79 @@ import { Button } from "../components/ui/Button";
 import { Input, Label, InputWrapper } from "../components/ui/Input";
 import { useNavigate } from "react-router-dom";
 
+/* ================= LAYOUT ================= */
+
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: ${({ theme }) => theme.bg.tertiary};
+  padding: 16px;
 `;
 
 const Box = styled.div`
   background: ${({ theme }) => theme.bg.card};
   border: 1px solid ${({ theme }) => theme.border.light};
   border-radius: 16px;
-  padding: 40px;
+  padding: 32px;
   width: 100%;
   max-width: 400px;
+
+  @media (min-width: 769px) {
+    padding: 40px;
+  }
 `;
 
+/* ================= HEADER ================= */
+
 const Logo = styled.h1`
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: ${({ theme }) => theme.accent.primary};
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+
+  @media (min-width: 769px) {
+    font-size: 24px;
+  }
 `;
 
 const Subtitle = styled.p`
-  font-size: 14px;
+  font-size: 13px;
   color: ${({ theme }) => theme.text.secondary};
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 `;
+
+/* ================= TABS ================= */
 
 const Tabs = styled.div`
   display: flex;
   background: ${({ theme }) => theme.bg.secondary};
-  border-radius: 8px;
-  padding: 3px;
-  margin-bottom: 28px;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
 `;
 
 const Tab = styled.button<{ $active: boolean }>`
   flex: 1;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 8px 0;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
   transition: all 0.15s;
+
   background: ${({ $active, theme }) =>
     $active ? theme.bg.card : "transparent"};
   color: ${({ $active, theme }) =>
     $active ? theme.text.primary : theme.text.tertiary};
-  border: ${({ $active, theme }) =>
-    $active ? `1px solid ${theme.border.light}` : "1px solid transparent"};
+
+  border: 1px solid
+    ${({ $active, theme }) =>
+      $active ? theme.border.light : "transparent"};
 `;
+
+/* ================= FORM ================= */
 
 const Form = styled.form`
   display: flex;
@@ -68,10 +89,12 @@ const Form = styled.form`
 const ErrorMsg = styled.p`
   font-size: 13px;
   color: ${({ theme }) => theme.accent.danger};
-  background: ${({ theme }) => theme.accent.danger}15;
+  background: ${({ theme }) => `${theme.accent.danger}15`};
   padding: 10px 14px;
   border-radius: 8px;
 `;
+
+/* ================= COMPONENT ================= */
 
 const Login: React.FC = () => {
   const [tab, setTab] = useState<"trainer" | "student">("trainer");
@@ -81,9 +104,10 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login, studentLogin } = useAuth();
-  const { user } = useAuth();
+  const { login, studentLogin, user } = useAuth();
   const navigate = useNavigate();
+
+  /* ===== LÓGICA ORIGINAL (NÃO ALTERADA) ===== */
 
   useEffect(() => {
     if (!user) return;
@@ -96,6 +120,7 @@ const Login: React.FC = () => {
       navigate("/student/today");
     }
   }, [user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -108,9 +133,15 @@ const Login: React.FC = () => {
         await studentLogin(code);
       }
     } catch (err: unknown) {
-      if (typeof err === "object" && err !== null && "response" in err) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err
+      ) {
         const error = err as any;
-        setError(error.response?.data?.error || "Erro ao fazer login");
+        setError(
+          error.response?.data?.error || "Erro ao fazer login",
+        );
       } else {
         setError("Erro ao fazer login");
       }
@@ -119,6 +150,8 @@ const Login: React.FC = () => {
     }
   };
 
+  /* ================= JSX ================= */
+
   return (
     <Container>
       <Box>
@@ -126,10 +159,18 @@ const Login: React.FC = () => {
         <Subtitle>Plataforma de treinos personalizados</Subtitle>
 
         <Tabs>
-          <Tab $active={tab === "trainer"} onClick={() => setTab("trainer")}>
+          <Tab
+            $active={tab === "trainer"}
+            onClick={() => setTab("trainer")}
+            type="button"
+          >
             Personal / Admin
           </Tab>
-          <Tab $active={tab === "student"} onClick={() => setTab("student")}>
+          <Tab
+            $active={tab === "student"}
+            onClick={() => setTab("student")}
+            type="button"
+          >
             Aluno
           </Tab>
         </Tabs>
@@ -149,13 +190,16 @@ const Login: React.FC = () => {
                   required
                 />
               </InputWrapper>
+
               <InputWrapper>
                 <Label>Senha</Label>
                 <Input
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
                   required
                 />
               </InputWrapper>
