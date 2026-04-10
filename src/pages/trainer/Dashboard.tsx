@@ -6,48 +6,81 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 
+/* ===================== HEADER ===================== */
+
 const PageTitle = styled.h1`
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+
+  @media (min-width: 769px) {
+    font-size: 22px;
+  }
 `;
 
 const PageSub = styled.p`
-  font-size: 14px;
+  font-size: 13px;
   color: ${({ theme }) => theme.text.secondary};
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 `;
+
+/* ===================== STATS ===================== */
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+
+  @media (min-width: 769px) {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
 `;
 
 const StatCard = styled(Card)`
-  padding: 20px;
+  padding: 16px;
+
+  @media (min-width: 769px) {
+    padding: 20px;
+  }
 `;
 
 const StatLabel = styled.p`
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ theme }) => theme.text.secondary};
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
 
 const StatValue = styled.p`
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 600;
-  color: ${({ theme }) => theme.text.primary};
+
+  @media (min-width: 769px) {
+    font-size: 28px;
+  }
+`;
+
+/* ===================== SECTION ===================== */
+
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 `;
 
 const SectionTitle = styled.h2`
   font-size: 16px;
   font-weight: 500;
-  margin-bottom: 16px;
 `;
+
+/* ===================== LIST ===================== */
 
 const StudentList = styled.div`
   display: flex;
@@ -56,19 +89,28 @@ const StudentList = styled.div`
 `;
 
 const StudentRow = styled(Card)`
-  padding: 14px 18px;
+  padding: 12px 14px;
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  transition: border 0.15s;
+  transition: border 0.15s, background 0.15s;
 
   &:hover {
     border-color: ${({ theme }) => theme.accent.primary};
   }
+
+  @media (min-width: 769px) {
+    padding: 14px 18px;
+  }
 `;
 
-const StudentInfo = styled.div``;
+const StudentInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
 
 const StudentName = styled.p`
   font-size: 14px;
@@ -80,21 +122,34 @@ const StudentEmail = styled.p`
   color: ${({ theme }) => theme.text.secondary};
 `;
 
+/* ===================== BADGE ===================== */
+
 const Badge = styled.span<{ active: boolean }>`
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 20px;
   font-weight: 500;
-  background: ${({ active, theme }) => active ? theme.accent.success + "20" : theme.accent.danger + "20"};
-  color: ${({ active, theme }) => active ? theme.accent.success : theme.accent.danger};
+  white-space: nowrap;
+
+  background: ${({ active, theme }) =>
+    active
+      ? `${theme.accent.success}20`
+      : `${theme.accent.danger}20`};
+
+  color: ${({ active, theme }) =>
+    active ? theme.accent.success : theme.accent.danger};
 `;
+
+/* ===================== EMPTY ===================== */
 
 const EmptyState = styled.div`
   text-align: center;
-  padding: 40px;
+  padding: 40px 20px;
   color: ${({ theme }) => theme.text.tertiary};
   font-size: 14px;
 `;
+
+/* ===================== TYPES ===================== */
 
 interface Student {
   id: string;
@@ -104,6 +159,8 @@ interface Student {
   accessCode: string;
 }
 
+/* ===================== COMPONENT ===================== */
+
 const TrainerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -111,12 +168,17 @@ const TrainerDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/students").then((res) => {
-      setStudents(res.data.data || res.data);
-    }).finally(() => setLoading(false));
+    api
+      .get("/students")
+      .then((res) => {
+        setStudents(res.data.data || res.data);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const activeStudents = students.filter((s) => s.status === "ACTIVE").length;
+  const activeStudents = students.filter(
+    (s) => s.status === "ACTIVE",
+  ).length;
 
   return (
     <div>
@@ -128,22 +190,31 @@ const TrainerDashboard: React.FC = () => {
           <StatLabel>Total de alunos</StatLabel>
           <StatValue>{students.length}</StatValue>
         </StatCard>
+
         <StatCard>
           <StatLabel>Ativos</StatLabel>
-          <StatValue style={{ color: "#059669" }}>{activeStudents}</StatValue>
+          <StatValue style={{ color: "#059669" }}>
+            {activeStudents}
+          </StatValue>
         </StatCard>
+
         <StatCard>
           <StatLabel>Inativos</StatLabel>
-          <StatValue style={{ color: "#dc2626" }}>{students.length - activeStudents}</StatValue>
+          <StatValue style={{ color: "#dc2626" }}>
+            {students.length - activeStudents}
+          </StatValue>
         </StatCard>
       </StatsGrid>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <SectionHeader>
         <SectionTitle>Seus alunos</SectionTitle>
-        <Button size="sm" onClick={() => navigate("/trainer/students")}>
+        <Button
+          size="sm"
+          onClick={() => navigate("/trainer/students")}
+        >
           + Novo aluno
         </Button>
-      </div>
+      </SectionHeader>
 
       {loading ? (
         <EmptyState>Carregando...</EmptyState>
@@ -152,13 +223,23 @@ const TrainerDashboard: React.FC = () => {
       ) : (
         <StudentList>
           {students.slice(0, 8).map((student) => (
-            <StudentRow key={student.id} onClick={() => navigate(`/trainer/students/${student.id}`)}>
+            <StudentRow
+              key={student.id}
+              onClick={() =>
+                navigate(`/trainer/students/${student.id}`)
+              }
+            >
               <StudentInfo>
                 <StudentName>{student.name}</StudentName>
-                <StudentEmail>{student.email || "Sem email"}</StudentEmail>
+                <StudentEmail>
+                  {student.email || "Sem email"}
+                </StudentEmail>
               </StudentInfo>
+
               <Badge active={student.status === "ACTIVE"}>
-                {student.status === "ACTIVE" ? "Ativo" : "Inativo"}
+                {student.status === "ACTIVE"
+                  ? "Ativo"
+                  : "Inativo"}
               </Badge>
             </StudentRow>
           ))}

@@ -4,38 +4,75 @@ import styled from "styled-components";
 import { api } from "../../services/api";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import { Input, InputWrapper, Label, Select } from "../../components/ui/Input";
+import {
+  Input,
+  InputWrapper,
+  Label,
+  Select,
+} from "../../components/ui/Input";
+
+/* ===================== HEADER ===================== */
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 `;
 
-const PageTitle = styled.h1`font-size: 22px; font-weight: 600;`;
+const PageTitle = styled.h1`
+  font-size: 18px;
+  font-weight: 600;
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  @media (min-width: 769px) {
+    font-size: 22px;
   }
 `;
 
-const SectionTitle = styled.h2`font-size: 15px; font-weight: 500; margin-bottom: 14px;`;
+/* ===================== GRID ===================== */
 
-const List = styled.div`display: flex; flex-direction: column; gap: 8px;`;
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 769px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+`;
+
+/* ===================== SECTIONS ===================== */
+
+const SectionTitle = styled.h2`
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 14px;
+`;
+
+const List = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+/* ===================== ITEM ===================== */
 
 const Item = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+
   padding: 10px 14px;
   background: ${({ theme }) => theme.bg.secondary};
   border-radius: 8px;
+  font-size: 14px;
+`;
+
+const ItemName = styled.span`
   font-size: 14px;
 `;
 
@@ -44,11 +81,29 @@ const DeleteBtn = styled.button`
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 4px;
-  &:hover { background: ${({ theme }) => theme.accent.danger}15; }
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => `${theme.accent.danger}15`};
+  }
 `;
 
-interface Category { id: string; name: string; }
-interface Subcategory { id: string; name: string; categoryId: string; }
+/* ===================== TYPES ===================== */
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Subcategory {
+  id: string;
+  name: string;
+  categoryId: string;
+}
+
+/* ===================== COMPONENT ===================== */
 
 const Categories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -56,6 +111,8 @@ const Categories: React.FC = () => {
   const [catName, setCatName] = useState("");
   const [subName, setSubName] = useState("");
   const [selectedCat, setSelectedCat] = useState("");
+
+  /* ===== MESMA LÓGICA (NÃO ALTERADA) ===== */
 
   const fetchAll = async () => {
     const cats = await api.get("/categories");
@@ -67,8 +124,14 @@ const Categories: React.FC = () => {
     setSubcategories(subs.data);
   };
 
-  useEffect(() => { fetchAll(); }, []);
-  useEffect(() => { if (selectedCat) fetchSubs(selectedCat); }, [selectedCat]);
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCat) fetchSubs(selectedCat);
+    else setSubcategories([]);
+  }, [selectedCat]);
 
   const createCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +142,10 @@ const Categories: React.FC = () => {
 
   const createSubcategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    await api.post("/subcategories", { name: subName, categoryId: selectedCat });
+    await api.post("/subcategories", {
+      name: subName,
+      categoryId: selectedCat,
+    });
     setSubName("");
     fetchSubs(selectedCat);
   };
@@ -94,6 +160,8 @@ const Categories: React.FC = () => {
     if (selectedCat) fetchSubs(selectedCat);
   };
 
+  /* ===================== JSX ===================== */
+
   return (
     <div>
       <Header>
@@ -101,46 +169,96 @@ const Categories: React.FC = () => {
       </Header>
 
       <Grid>
+        {/* ===== CATEGORIAS ===== */}
         <Card>
           <SectionTitle>Categorias</SectionTitle>
-          <form onSubmit={createCategory} style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-            <Input value={catName} onChange={(e) => setCatName(e.target.value)} placeholder="Nova categoria..." required />
-            <Button type="submit" size="sm">Adicionar</Button>
+
+          <form
+            onSubmit={createCategory}
+            style={{ display: "flex", gap: 8, marginBottom: 16 }}
+          >
+            <Input
+              value={catName}
+              onChange={(e) => setCatName(e.target.value)}
+              placeholder="Nova categoria..."
+              required
+            />
+            <Button type="submit" size="sm">
+              Adicionar
+            </Button>
           </form>
+
           <List>
             {categories.map((c) => (
               <Item key={c.id}>
-                <span>{c.name}</span>
-                <DeleteBtn onClick={() => deleteCategory(c.id)}>Excluir</DeleteBtn>
+                <ItemName>{c.name}</ItemName>
+                <DeleteBtn onClick={() => deleteCategory(c.id)}>
+                  Excluir
+                </DeleteBtn>
               </Item>
             ))}
+
+            {categories.length === 0 && (
+              <p style={{ fontSize: 13, color: "#888" }}>
+                Nenhuma categoria cadastrada.
+              </p>
+            )}
           </List>
         </Card>
 
+        {/* ===== SUBCATEGORIAS ===== */}
         <Card>
           <SectionTitle>Subcategorias</SectionTitle>
+
           <InputWrapper style={{ marginBottom: 12 }}>
             <Label>Categoria</Label>
-            <Select value={selectedCat} onChange={(e) => setSelectedCat(e.target.value)}>
+            <Select
+              value={selectedCat}
+              onChange={(e) => setSelectedCat(e.target.value)}
+            >
               <option value="">Selecione uma categoria</option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
             </Select>
           </InputWrapper>
+
           {selectedCat && (
             <>
-              <form onSubmit={createSubcategory} style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-                <Input value={subName} onChange={(e) => setSubName(e.target.value)} placeholder="Nova subcategoria..." required />
-                <Button type="submit" size="sm">Adicionar</Button>
+              <form
+                onSubmit={createSubcategory}
+                style={{ display: "flex", gap: 8, marginBottom: 16 }}
+              >
+                <Input
+                  value={subName}
+                  onChange={(e) => setSubName(e.target.value)}
+                  placeholder="Nova subcategoria..."
+                  required
+                />
+                <Button type="submit" size="sm">
+                  Adicionar
+                </Button>
               </form>
+
               <List>
                 {subcategories.map((s) => (
                   <Item key={s.id}>
-                    <span>{s.name}</span>
-                    <DeleteBtn onClick={() => deleteSubcategory(s.id)}>Excluir</DeleteBtn>
+                    <ItemName>{s.name}</ItemName>
+                    <DeleteBtn
+                      onClick={() => deleteSubcategory(s.id)}
+                    >
+                      Excluir
+                    </DeleteBtn>
                   </Item>
                 ))}
+
+                {subcategories.length === 0 && (
+                  <p style={{ fontSize: 13, color: "#888" }}>
+                    Nenhuma subcategoria cadastrada.
+                  </p>
+                )}
               </List>
             </>
           )}
