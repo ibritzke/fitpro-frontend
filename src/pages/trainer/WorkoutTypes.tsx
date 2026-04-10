@@ -3,51 +3,86 @@ import styled from "styled-components";
 import { api } from "../../services/api";
 import { Button } from "../../components/ui/Button";
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card";
-import { Input, InputWrapper, Label, Select, Textarea } from "../../components/ui/Input";
+import {
+  Input,
+  InputWrapper,
+  Label,
+  Select,
+  Textarea,
+} from "../../components/ui/Input";
+
+/* ================= HEADER ================= */
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 `;
 
-const PageTitle = styled.h1`font-size: 22px; font-weight: 600;`;
-const Grid = styled.div`display: flex; flex-direction: column; gap: 16px;`;
+const PageTitle = styled.h1`
+  font-size: 18px;
+  font-weight: 600;
+
+  @media (min-width: 769px) {
+    font-size: 22px;
+  }
+`;
+
+const Grid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+/* ================= LIST ================= */
 
 const ExerciseRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
+  align-items: flex-start;
   padding: 10px 0;
   border-bottom: 1px solid ${({ theme }) => theme.border.light};
   font-size: 13px;
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 
-const ExMeta = styled.span`
-  color: ${({ theme }) => theme.text.secondary};
+const ExMeta = styled.p`
   font-size: 12px;
+  color: ${({ theme }) => theme.text.secondary};
 `;
 
 const DeleteBtn = styled.button`
-  color: ${({ theme }) => theme.accent.danger};
   font-size: 12px;
+  color: ${({ theme }) => theme.accent.danger};
+  background: transparent;
+  border: none;
+  cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  &:hover { background: ${({ theme }) => theme.accent.danger}15; }
+
+  &:hover {
+    background: ${({ theme }) => `${theme.accent.danger}15`};
+  }
 `;
+
+/* ================= MODAL ================= */
 
 const Modal = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 20px;
+  padding: 16px;
 `;
 
 const ModalBox = styled(Card)`
@@ -60,12 +95,38 @@ const ModalBox = styled(Card)`
   gap: 16px;
 `;
 
-const ModalTitle = styled.h2`font-size: 17px; font-weight: 600;`;
-const Row2 = styled.div`display: grid; grid-template-columns: 1fr 1fr; gap: 12px;`;
+const ModalTitle = styled.h2`
+  font-size: 16px;
+  font-weight: 600;
+`;
 
-interface Category { id: string; name: string; }
-interface Subcategory { id: string; name: string; }
-interface Exercise { id: string; name: string; }
+const Row2 = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+/* ================= TYPES ================= */
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Subcategory {
+  id: string;
+  name: string;
+}
+
+interface Exercise {
+  id: string;
+  name: string;
+}
+
 interface WorkoutTypeExercise {
   id: string;
   exercise: Exercise;
@@ -76,17 +137,21 @@ interface WorkoutTypeExercise {
   observation?: string;
   videoUrl?: string;
 }
+
 interface WorkoutType {
   id: string;
   name: string;
   exercises: WorkoutTypeExercise[];
 }
 
+/* ================= COMPONENT ================= */
+
 const WorkoutTypes: React.FC = () => {
   const [workoutTypes, setWorkoutTypes] = useState<WorkoutType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+
   const [showNewType, setShowNewType] = useState(false);
   const [showAddEx, setShowAddEx] = useState<string | null>(null);
   const [typeName, setTypeName] = useState("");
@@ -102,18 +167,32 @@ const WorkoutTypes: React.FC = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /* ===== LÓGICA ORIGINAL ===== */
+
   const fetch = async () => {
     const res = await api.get("/workout-types");
     setWorkoutTypes(res.data);
   };
 
-  useEffect(() => { fetch(); api.get("/categories").then((r) => setCategories(r.data)); }, []);
+  useEffect(() => {
+    fetch();
+    api.get("/categories").then((r) => setCategories(r.data));
+  }, []);
 
   useEffect(() => {
-    if (categoryId) {
-      api.get(`/subcategories/category/${categoryId}`).then((r) => setSubcategories(r.data));
-      api.get("/exercises", { params: { categoryId } }).then((r) => setExercises(r.data));
+    if (!categoryId) {
+      setSubcategories([]);
+      setExercises([]);
+      return;
     }
+
+    api
+      .get(`/subcategories/category/${categoryId}`)
+      .then((r) => setSubcategories(r.data));
+
+    api
+      .get("/exercises", { params: { categoryId } })
+      .then((r) => setExercises(r.data));
   }, [categoryId]);
 
   const createType = async (e: React.FormEvent) => {
@@ -121,9 +200,12 @@ const WorkoutTypes: React.FC = () => {
     setLoading(true);
     try {
       await api.post("/workout-types", { name: typeName });
-      setTypeName(""); setShowNewType(false);
+      setTypeName("");
+      setShowNewType(false);
       fetch();
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addExercise = async (e: React.FormEvent) => {
@@ -140,12 +222,22 @@ const WorkoutTypes: React.FC = () => {
         observation: observation || undefined,
         videoUrl: videoUrl || undefined,
       });
+
       setShowAddEx(null);
-      setCategoryId(""); setSubcategoryId(""); setExerciseId("");
-      setKg(""); setReps(""); setSets(""); setRestTime("");
-      setObservation(""); setVideoUrl("");
+      setCategoryId("");
+      setSubcategoryId("");
+      setExerciseId("");
+      setKg("");
+      setReps("");
+      setSets("");
+      setRestTime("");
+      setObservation("");
+      setVideoUrl("");
+
       fetch();
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const removeExercise = async (id: string) => {
@@ -160,6 +252,8 @@ const WorkoutTypes: React.FC = () => {
     fetch();
   };
 
+  /* ================= JSX ================= */
+
   return (
     <div>
       <Header>
@@ -172,112 +266,227 @@ const WorkoutTypes: React.FC = () => {
           <Card key={wt.id}>
             <CardHeader>
               <CardTitle>{wt.name}</CardTitle>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Button size="sm" variant="secondary" onClick={() => setShowAddEx(wt.id)}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setShowAddEx(wt.id)}
+                >
                   + Exercício
                 </Button>
-                <DeleteBtn onClick={() => deleteType(wt.id)}>Excluir</DeleteBtn>
+                <DeleteBtn onClick={() => deleteType(wt.id)}>
+                  Excluir
+                </DeleteBtn>
               </div>
             </CardHeader>
+
             {wt.exercises.length === 0 ? (
-              <p style={{ fontSize: 13, color: "#888" }}>Nenhum exercício adicionado.</p>
+              <p style={{ fontSize: 13, color: "#888" }}>
+                Nenhum exercício adicionado.
+              </p>
             ) : (
               wt.exercises.map((ex) => (
                 <ExerciseRow key={ex.id}>
                   <div>
-                    <p style={{ fontWeight: 500 }}>{ex.exercise.name}</p>
+                    <p style={{ fontWeight: 500 }}>
+                      {ex.exercise.name}
+                    </p>
                     <ExMeta>
-                      {[ex.sets && `${ex.sets} séries`, ex.reps && `${ex.reps} reps`, ex.kg && `${ex.kg}kg`, ex.restTime && `${ex.restTime}s descanso`]
-                        .filter(Boolean).join(" · ")}
+                      {[
+                        ex.sets && `${ex.sets} séries`,
+                        ex.reps && `${ex.reps} reps`,
+                        ex.kg && `${ex.kg}kg`,
+                        ex.restTime &&
+                          `${ex.restTime}s descanso`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </ExMeta>
-                    {ex.observation && <p style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{ex.observation}</p>}
+                    {ex.observation && (
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: "#888",
+                          marginTop: 4,
+                        }}
+                      >
+                        {ex.observation}
+                      </p>
+                    )}
                   </div>
-                  <DeleteBtn onClick={() => removeExercise(ex.id)}>Remover</DeleteBtn>
+
+                  <DeleteBtn onClick={() => removeExercise(ex.id)}>
+                    Remover
+                  </DeleteBtn>
                 </ExerciseRow>
               ))
             )}
           </Card>
         ))}
+
         {workoutTypes.length === 0 && (
-          <p style={{ color: "#888", textAlign: "center", padding: 40 }}>Nenhum tipo de treino criado.</p>
+          <p style={{ color: "#888", textAlign: "center", padding: 40 }}>
+            Nenhum tipo de treino criado.
+          </p>
         )}
       </Grid>
 
+      {/* NOVO TIPO */}
       {showNewType && (
         <Modal onClick={() => setShowNewType(false)}>
           <ModalBox onClick={(e) => e.stopPropagation()}>
             <ModalTitle>Novo tipo de treino</ModalTitle>
-            <form onSubmit={createType} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <form
+              onSubmit={createType}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+              }}
+            >
               <InputWrapper>
                 <Label>Nome *</Label>
-                <Input value={typeName} onChange={(e) => setTypeName(e.target.value)} placeholder="ex: Treino A – Peito + Tríceps" required />
+                <Input
+                  value={typeName}
+                  onChange={(e) => setTypeName(e.target.value)}
+                  required
+                />
               </InputWrapper>
+
               <div style={{ display: "flex", gap: 10 }}>
-                <Button type="button" variant="secondary" fullWidth onClick={() => setShowNewType(false)}>Cancelar</Button>
-                <Button type="submit" fullWidth loading={loading}>Criar</Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => setShowNewType(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" fullWidth loading={loading}>
+                  Criar
+                </Button>
               </div>
             </form>
           </ModalBox>
         </Modal>
       )}
 
+      {/* ADICIONAR EXERCÍCIO */}
       {showAddEx && (
         <Modal onClick={() => setShowAddEx(null)}>
           <ModalBox onClick={(e) => e.stopPropagation()}>
             <ModalTitle>Adicionar exercício</ModalTitle>
-            <form onSubmit={addExercise} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+            <form
+              onSubmit={addExercise}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+              }}
+            >
               <InputWrapper>
                 <Label>Categoria *</Label>
-                <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
-                  <option value="">Selecione...</option>
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <Select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione…</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
                 </Select>
               </InputWrapper>
+
               <InputWrapper>
                 <Label>Subcategoria</Label>
-                <Select value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)}>
-                  <option value="">Selecione...</option>
-                  {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                <Select
+                  value={subcategoryId}
+                  onChange={(e) =>
+                    setSubcategoryId(e.target.value)
+                  }
+                >
+                  <option value="">Selecione…</option>
+                  {subcategories.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
                 </Select>
               </InputWrapper>
+
               <InputWrapper>
                 <Label>Exercício *</Label>
-                <Select value={exerciseId} onChange={(e) => setExerciseId(e.target.value)} required>
-                  <option value="">Selecione...</option>
-                  {exercises.map((ex) => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
+                <Select
+                  value={exerciseId}
+                  onChange={(e) => setExerciseId(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione…</option>
+                  {exercises.map((ex) => (
+                    <option key={ex.id} value={ex.id}>
+                      {ex.name}
+                    </option>
+                  ))}
                 </Select>
               </InputWrapper>
+
               <Row2>
                 <InputWrapper>
                   <Label>Séries</Label>
-                  <Input type="number" value={sets} onChange={(e) => setSets(e.target.value)} placeholder="4" />
+                  <Input value={sets} onChange={(e) => setSets(e.target.value)} />
                 </InputWrapper>
                 <InputWrapper>
                   <Label>Repetições</Label>
-                  <Input value={reps} onChange={(e) => setReps(e.target.value)} placeholder="12" />
+                  <Input value={reps} onChange={(e) => setReps(e.target.value)} />
                 </InputWrapper>
               </Row2>
+
               <Row2>
                 <InputWrapper>
                   <Label>Kg</Label>
-                  <Input type="number" value={kg} onChange={(e) => setKg(e.target.value)} placeholder="60" />
+                  <Input value={kg} onChange={(e) => setKg(e.target.value)} />
                 </InputWrapper>
                 <InputWrapper>
                   <Label>Descanso (seg)</Label>
-                  <Input type="number" value={restTime} onChange={(e) => setRestTime(e.target.value)} placeholder="60" />
+                  <Input
+                    value={restTime}
+                    onChange={(e) => setRestTime(e.target.value)}
+                  />
                 </InputWrapper>
               </Row2>
+
               <InputWrapper>
                 <Label>Observação</Label>
-                <Textarea value={observation} onChange={(e) => setObservation(e.target.value)} placeholder="Dicas de execução..." />
+                <Textarea
+                  value={observation}
+                  onChange={(e) => setObservation(e.target.value)}
+                />
               </InputWrapper>
+
               <InputWrapper>
                 <Label>Link do vídeo</Label>
-                <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/..." />
+                <Input
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                />
               </InputWrapper>
+
               <div style={{ display: "flex", gap: 10 }}>
-                <Button type="button" variant="secondary" fullWidth onClick={() => setShowAddEx(null)}>Cancelar</Button>
-                <Button type="submit" fullWidth loading={loading}>Adicionar</Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => setShowAddEx(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" fullWidth loading={loading}>
+                  Adicionar
+                </Button>
               </div>
             </form>
           </ModalBox>
