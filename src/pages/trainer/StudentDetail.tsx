@@ -6,6 +6,7 @@ import { api } from "../../services/api";
 import { Button } from "../../components/ui/Button";
 import { Card, CardHeader, CardTitle } from "../../components/ui/Card";
 import { Select, InputWrapper, Label, Input } from "../../components/ui/Input";
+import { EditStudentModal } from "./components/EditStudentModal";
 
 /* ================= HEADER ================= */
 
@@ -148,7 +149,7 @@ const StudentDetail: React.FC = () => {
   const [pinMsg, setPinMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
-
+  const [editing, setEditing] = useState(false);
   /* ===== LÓGICA ORIGINAL (NÃO ALTERADA) ===== */
 
   const fetchAll = async () => {
@@ -212,17 +213,11 @@ const StudentDetail: React.FC = () => {
   };
 
   if (!student)
-    return (
-      <div style={{ padding: 32, color: "#888" }}>
-        Carregando...
-      </div>
-    );
+    return <div style={{ padding: 32, color: "#888" }}>Carregando...</div>;
 
   return (
     <div>
-      <BackBtn onClick={() => navigate("/trainer/students")}>
-        ← Voltar
-      </BackBtn>
+      <BackBtn onClick={() => navigate("/trainer/students")}>← Voltar</BackBtn>
 
       <PageTitle>{student.name}</PageTitle>
       <SubInfo>
@@ -248,6 +243,14 @@ const StudentDetail: React.FC = () => {
           <Button size="sm" onClick={savePin} loading={pinLoading}>
             Salvar
           </Button>
+
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setEditing(true)}
+          >
+            Editar aluno
+          </Button>
         </div>
 
         {pinMsg && (
@@ -255,9 +258,7 @@ const StudentDetail: React.FC = () => {
             style={{
               fontSize: 12,
               marginTop: 6,
-              color: pinMsg.includes("sucesso")
-                ? "#059669"
-                : "#dc2626",
+              color: pinMsg.includes("sucesso") ? "#059669" : "#dc2626",
             }}
           >
             {pinMsg}
@@ -272,18 +273,14 @@ const StudentDetail: React.FC = () => {
           </CardHeader>
 
           {DAYS.map((day, idx) => {
-            const assigned = schedule.find(
-              (s) => s.dayOfWeek === idx,
-            );
+            const assigned = schedule.find((s) => s.dayOfWeek === idx);
             return (
               <DayRow key={idx}>
                 <DayLabel>{day}</DayLabel>
 
                 {assigned ? (
                   <>
-                    <WorkoutName>
-                      {assigned.workoutType.name}
-                    </WorkoutName>
+                    <WorkoutName>{assigned.workoutType.name}</WorkoutName>
                     <button
                       onClick={() => remove(assigned.id)}
                       style={{
@@ -299,9 +296,7 @@ const StudentDetail: React.FC = () => {
                     </button>
                   </>
                 ) : (
-                  <span style={{ color: "#666", fontSize: 12 }}>
-                    Descanso
-                  </span>
+                  <span style={{ color: "#666", fontSize: 12 }}>Descanso</span>
                 )}
               </DayRow>
             );
@@ -326,9 +321,7 @@ const StudentDetail: React.FC = () => {
                 value={selectedDay}
                 onChange={(e) =>
                   setSelectedDay(
-                    e.target.value === ""
-                      ? ""
-                      : parseInt(e.target.value),
+                    e.target.value === "" ? "" : parseInt(e.target.value),
                   )
                 }
               >
@@ -367,6 +360,14 @@ const StudentDetail: React.FC = () => {
           </div>
         </Card>
       </Grid>
+
+      {editing && student && (
+        <EditStudentModal
+          student={student}
+          onClose={() => setEditing(false)}
+          onSaved={fetchAll}
+        />
+      )}
     </div>
   );
 };

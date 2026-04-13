@@ -1,36 +1,19 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "../../services/api";
-import { useAuth } from "../../contexts/AuthContext";
 
-/* =========================
-   TÍTULO DA PÁGINA
-========================= */
 
 const PageTitle = styled.h1`
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 16px;
-
-  @media (min-width: 769px) {
-    font-size: 22px;
-    margin-bottom: 24px;
-  }
 `;
-
-/* =========================
-   LISTA
-========================= */
 
 const List = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
 `;
-
-/* =========================
-   ITEM
-========================= */
 
 const Item = styled.div`
   background: ${({ theme }) => theme.bg.card};
@@ -39,39 +22,26 @@ const Item = styled.div`
   padding: 14px 16px;
 
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+  justify-content: space-between;
 `;
 
-const ItemLeft = styled.div`
+const Info = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
 `;
 
-const ItemMain = styled.p`
-  font-weight: 500;
+const Main = styled.p`
   font-size: 14px;
+  font-weight: 500;
 `;
 
-const ItemDate = styled.p`
+const DateText = styled.p`
   font-size: 11px;
   color: ${({ theme }) => theme.text.tertiary};
 `;
 
-/* =========================
-   BADGE
-========================= */
-
 const Badge = styled.span<{ completed: boolean }>`
-  align-self: flex-start;
-
   font-size: 11px;
   padding: 4px 12px;
   border-radius: 20px;
@@ -84,15 +54,18 @@ const Badge = styled.span<{ completed: boolean }>`
 
   color: ${({ completed, theme }) =>
     completed ? theme.accent.success : theme.text.tertiary};
-
-  @media (min-width: 640px) {
-    align-self: center;
-  }
 `;
 
-/* =========================
-   TIPOS
-========================= */
+
+
+
+
+
+
+
+
+
+
 
 interface HistoryItem {
   id: string;
@@ -107,14 +80,13 @@ interface HistoryItem {
    COMPONENTE
 ========================= */
 
+
 const StudentHistory: React.FC = () => {
-  const { user } = useAuth();
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    if (!user) return;
-    api.get(`/history/${user.id}`).then((res) => setHistory(res.data));
-  }, [user]);
+    api.get("/history?days=90").then((res) => setHistory(res.data));
+  }, []);
 
   return (
     <div>
@@ -123,13 +95,13 @@ const StudentHistory: React.FC = () => {
       <List>
         {history.map((h) => (
           <Item key={h.id}>
-            <ItemLeft>
-              <ItemMain>
+            <Info>
+              <Main>
                 {h.weight ? `${h.weight}kg` : "Sem peso"} ·{" "}
                 {h.setsCompleted || 0} séries
-              </ItemMain>
+              </Main>
 
-              <ItemDate>
+              <DateText>
                 {new Date(h.date).toLocaleDateString("pt-BR", {
                   day: "2-digit",
                   month: "short",
@@ -137,8 +109,8 @@ const StudentHistory: React.FC = () => {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
-              </ItemDate>
-            </ItemLeft>
+              </DateText>
+            </Info>
 
             <Badge completed={h.completed}>
               {h.completed ? "Concluído" : "Parcial"}

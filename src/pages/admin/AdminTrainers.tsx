@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "../../services/api";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Input, InputWrapper, Label } from "../../components/ui/Input";
+import { EditTrainerModal } from "./components/EditTrainerModal";
 
 /* ================= HEADER DA PÁGINA ================= */
 
@@ -78,9 +80,7 @@ const Badge = styled.span<{ active: boolean }>`
   font-weight: 500;
 
   background: ${({ active, theme }) =>
-    active
-      ? `${theme.accent.success}20`
-      : `${theme.accent.danger}20`};
+    active ? `${theme.accent.success}20` : `${theme.accent.danger}20`};
 
   color: ${({ active, theme }) =>
     active ? theme.accent.success : theme.accent.danger};
@@ -140,7 +140,7 @@ const AdminTrainers: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [editing, setEditing] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -164,7 +164,7 @@ const AdminTrainers: React.FC = () => {
       setPassword("");
       setShowModal(false);
       fetchTrainers();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response?.data?.error || "Erro ao criar personal");
     } finally {
@@ -181,9 +181,7 @@ const AdminTrainers: React.FC = () => {
     <div>
       <PageHeader>
         <PageTitle>Personais</PageTitle>
-        <Button onClick={() => setShowModal(true)}>
-          + Novo personal
-        </Button>
+        <Button onClick={() => setShowModal(true)}>+ Novo personal</Button>
       </PageHeader>
 
       <Grid>
@@ -203,9 +201,9 @@ const AdminTrainers: React.FC = () => {
               {t._count.students} aluno
               {t._count.students !== 1 ? "s" : ""} ·{" "}
               {t.lastLogin
-                ? `Último acesso: ${new Date(
-                    t.lastLogin
-                  ).toLocaleDateString("pt-BR")}`
+                ? `Último acesso: ${new Date(t.lastLogin).toLocaleDateString(
+                    "pt-BR",
+                  )}`
                 : "Nunca acessou"}
             </Meta>
 
@@ -216,6 +214,14 @@ const AdminTrainers: React.FC = () => {
                 onClick={() => toggleStatus(t.id)}
               >
                 {t.status === "ACTIVE" ? "Inativar" : "Ativar"}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setEditing(trainers)}
+              >
+                Editar
               </Button>
             </CardActions>
           </UserCard>
@@ -284,6 +290,13 @@ const AdminTrainers: React.FC = () => {
             </form>
           </ModalBox>
         </ModalOverlay>
+      )}
+      {editing && (
+        <EditTrainerModal
+          trainer={editing}
+          onClose={() => setEditing(null)}
+          onSaved={fetchTrainers}
+        />
       )}
     </div>
   );

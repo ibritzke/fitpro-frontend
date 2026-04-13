@@ -10,8 +10,20 @@ interface User {
   logoUrl?: string;
 }
 
+
+export type UserRole = "ADMIN" | "TRAINER" | "STUDENT";
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  role: UserRole;
+  email?: string;
+  trainerId?: string;
+}
+
+
 interface AuthContextData {
-  user: User | null;
+  user: AuthUser | null;
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
