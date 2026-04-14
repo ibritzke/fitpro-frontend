@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 const groupByDate = (items: HistoryItem[]) => {
   return items.reduce<Record<string, HistoryItem[]>>((acc, item) => {
@@ -77,10 +78,11 @@ interface HistoryItem {
 
 const StudentHistory: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
-
+  const { user } = useAuth();
   useEffect(() => {
-    api.get("/history?days=90").then((res) => setHistory(res.data));
-  }, []);
+    if (!user?.id) return;
+    api.get(`/history/student/${user.id}`).then((res) => setHistory(res.data));
+  }, [user?.id]);
 
   const grouped = groupByDate(history);
   return (

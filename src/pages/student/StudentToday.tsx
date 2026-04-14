@@ -29,34 +29,59 @@ const ExCard = styled.div`
   margin-bottom: 16px;
 `;
 
+const ExHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+`;
+
 const ExName = styled.p`
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
 `;
 
-/* ================= SETS ================= */
+const Weight = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+`;
 
-const SetRow = styled.div`
+const SetsRow = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-top: 12px;
 `;
 
-const SetNum = styled.div<{ done?: boolean }>`
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: ${({ done, theme }) =>
-    done ? theme.accent.success : theme.bg.secondary};
-  color: ${({ done, theme }) => (done ? "#fff" : theme.text.tertiary)};
+/* ================= SERIES ================= */
+
+const SetCircle = styled.div<{ done?: boolean }>`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+
+  background: ${({ done, theme }) =>
+    done ? theme.accent.success : theme.bg.secondary};
+
+  color: ${({ done, theme }) => (done ? "#fff" : theme.text.secondary)};
+  font-size: 13px;
   font-weight: 600;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: all 0.1s;
+
+  &:active {
+    transform: scale(0.97);
+  }
 `;
+
+/* ================= TIMER ================= */
 
 const TimerOverlay = styled.div`
   position: fixed;
@@ -89,14 +114,13 @@ const TimerSeconds = styled.div`
 /* ================= TYPES ================= */
 
 interface ExerciseData {
-  id: string; // id da relação WorkoutTypeExercise
+  id: string;
   sets: number;
   reps: string;
   kg: number;
   restTime?: number;
   observation?: string;
   videoUrl?: string;
-
   exercise: {
     id: string;
     name: string;
@@ -114,18 +138,16 @@ interface WorkoutDay {
 
 const StudentToday: React.FC = () => {
   const { user } = useAuth();
-  const [workout, setWorkout] = useState<WorkoutDay | null>(null);
   const navigate = useNavigate();
-  const [exerciseProgress, setExerciseProgress] = useState<
-    Record<string, number>
-  >({});
-  const [editedWeights, setEditedWeights] = useState<Record<string, number>>(
-    {},
-  );
+
+  const [workout, setWorkout] = useState<WorkoutDay | null>(null);
+  const [progress, setProgress] = useState<Record<string, number>>({});
+  const [editedWeights, setEditedWeights] = useState<Record<string, number>>({});
   const [editingWeight, setEditingWeight] = useState<string | null>(null);
-  const [timer, setTimer] = useState<{ seconds: number; active: boolean }>({
-    seconds: 0,
+
+  const [timer, setTimer] = useState<{ active: boolean; seconds: number }>({
     active: false,
+    seconds: 0,
   });
 
   useEffect(() => {
@@ -133,7 +155,7 @@ const StudentToday: React.FC = () => {
 
     api
       .get(`/student-workouts/today/${user.id}`)
-      .then((r) => setWorkout(r.data))
+      .then((res) => setWorkout(res.data))
       .catch(() => setWorkout(null));
   }, [user]);
 
@@ -141,10 +163,7 @@ const StudentToday: React.FC = () => {
     if (!timer.active || timer.seconds <= 0) return;
 
     const interval = setInterval(() => {
-      setTimer((t) => ({
-        ...t,
-        seconds: t.seconds - 1,
-      }));
+      setTimer((t) => ({ ...t, seconds: t.seconds - 1 }));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -156,27 +175,24 @@ const StudentToday: React.FC = () => {
 
   if (!workout) {
     return (
-      <div>
+      <>
         <PageTitle>Treino de hoje</PageTitle>
         <Sub>{todayLabel}</Sub>
         <p style={{ padding: 40, textAlign: "center", color: "#888" }}>
           Nenhum treino para hoje
         </p>
-      </div>
+      </>
     );
   }
 
   return (
-    <div>
+    <>
       {timer.active && (
         <TimerOverlay>
           <TimerBox>
             <p>Descanso</p>
             <TimerSeconds>{timer.seconds}s</TimerSeconds>
-            <Button
-              variant="secondary"
-              onClick={() => setTimer({ seconds: 0, active: false })}
-            >
+            <Button onClick={() => setTimer({ active: false, seconds: 0 })}>
               Pular descanso
             </Button>
           </TimerBox>
@@ -189,98 +205,68 @@ const StudentToday: React.FC = () => {
       </Sub>
 
       {workout.workoutType.exercises.map((ex) => {
-        const done = exerciseProgress[ex.exercise.id] || 0;
+        const done = progress[ex.exercise.id] || 0;
         const weight = editedWeights[ex.exercise.id] ?? ex.kg;
 
         return (
           <ExCard key={ex.exercise.id}>
-            {/* timer.active */}
-            <ExName>{ex.exercise.name}</ExName>
+            <ExHeader>
+              <ExName>{ex.exercise.name}</ExName>
 
-            {/* Observação */}
+              <Weight onClick={() => setEditingWeight(ex.exercise.id)}>
+                {editingWeight === ex.exercise.id ? (
+                  <input
+                    type="number"
+                    autoFocus
+                    value={weight}
+                    onChange={(e) =>
+                      setEditedWeights((p) => ({
+                        ...p,
+                        [ex.exercise.id]: Number(e.target.value),
+                      }))
+                    }
+                    onBlur={() => setEditingWeight(null)}
+                    style={{ width: 60 }}
+                  />
+                ) : (
+                  `${weight} kg`
+                )}
+              </Weight>
+            </ExHeader>
+
             {ex.observation && (
               <p style={{ fontSize: 12, marginBottom: 8 }}>
                 📝 {ex.observation}
               </p>
             )}
 
-            {/* Vídeo */}
             {ex.videoUrl && (
-              <a
-                href={ex.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontSize: 12,
-                  marginBottom: 8,
-                  display: "inline-block",
-                }}
-              >
+              <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer">
                 ▶️ Ver vídeo
               </a>
             )}
 
-            {Array.from({ length: ex.sets }).map((_, setIdx) => {
-              const isDone = setIdx < done;
+            <SetsRow>
+              {Array.from({ length: ex.sets }).map((_, idx) => {
+                const isDone = idx < done;
 
-              return (
-                <SetRow key={setIdx}>
-                  <SetNum done={isDone}>{isDone ? "✓" : setIdx + 1}</SetNum>
-
-                  {/* Peso editável */}
-<></>
-                  <div
-                    style={{
-                      marginLeft: "auto",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => setEditingWeight(ex.exercise.id)}
-                  >
-                    {editingWeight === ex.exercise.id ? (
-                      <input
-                        type="number"
-                        autoFocus
-                        value={weight}
-                        onBlur={() => setEditingWeight(null)}
-                        onChange={(e) =>
-                          setEditedWeights((prev) => ({
-                            ...prev,
-                            [ex.exercise.id]: Number(e.target.value),
-                          }))
-                        }
-                        style={{
-                          width: 60,
-                          padding: 4,
-                        }}
-                      />
-                    ) : (
-                      <span>{weight} kg</span>
-                    )}
-                  </div>
-
-                  <span>{ex.reps} reps</span>
-
-                  <Button
-                    size="sm"
-                    disabled={isDone}
+                return (
+                  <SetCircle
+                    key={idx}
+                    done={isDone}
                     onClick={async () => {
-                      const next = done + 1;
+                      if (isDone) return;
 
-                      setExerciseProgress((prev) => ({
-                        ...prev,
+                      const next = done + 1;
+                      setProgress((p) => ({
+                        ...p,
                         [ex.exercise.id]: next,
                       }));
 
-                      // Inicia descanso
                       if (ex.restTime) {
-                        setTimer({
-                          seconds: ex.restTime,
-                          active: true,
-                        });
+                        setTimer({ active: true, seconds: ex.restTime });
                       }
 
-                      // Finalizou todas as séries → salva histórico
                       if (next === ex.sets) {
                         await api.post("/history", {
                           exerciseId: ex.exercise.id,
@@ -291,23 +277,19 @@ const StudentToday: React.FC = () => {
                       }
                     }}
                   >
-                    {isDone ? "✅" : "Concluir"}
-                  </Button>
-                </SetRow>
-              );
-            })}
+                    {isDone ? "✅" : `${idx + 1}x${ex.reps}`}
+                  </SetCircle>
+                );
+              })}
+            </SetsRow>
           </ExCard>
         );
       })}
 
-      <Button
-        fullWidth
-        style={{ marginBottom: 24 }}
-        onClick={() => navigate("/student/week")}
-      >
+      <Button fullWidth onClick={() => navigate("/student/week")}>
         ✅ Finalizar treino
       </Button>
-    </div>
+    </>
   );
 };
 

@@ -1,38 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
-import { Button } from "../../components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
-/* ================= STYLES ================= */
+/* ---------- UI ---------- */
 
-const Container = styled.div`
-  padding: 20px 16px 0;
-`;
-
-const BrandHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Logo = styled.img`
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-  margin-bottom: 12px;
-`;
-
-const TrainerName = styled.h1`
+const PageTitle = styled.h1`
   font-size: 18px;
   font-weight: 600;
+  margin-bottom: 16px;
 `;
 
-const Subtitle = styled.p`
-  font-size: 13px;
-  color: ${({ theme }) => theme.text.secondary};
+const Cards = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 `;
 
 const Card = styled.div`
@@ -40,94 +23,139 @@ const Card = styled.div`
   border: 1px solid ${({ theme }) => theme.border.light};
   border-radius: 16px;
   padding: 16px;
-  margin-bottom: 16px;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
 `;
 
-const CardTitle = styled.h2`
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 8px;
-`;
-
-const CardText = styled.p`
+const Label = styled.p`
   font-size: 13px;
   color: ${({ theme }) => theme.text.secondary};
-  margin-bottom: 12px;
 `;
 
-/* ================= TYPES ================= */
+const Value = styled.p`
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
+`;
 
-interface Trainer {
-  id: string;
-  name: string;
-  logoUrl?: string;
+const PrimaryButton = styled.button`
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  background: ${({ theme }) => theme.accent.primary};
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.85;
+  }
+`;
+
+/* ---------- TYPES ---------- */
+
+interface HistoryItem {
+  date: string;
+  completed: boolean;
 }
 
-interface TodayWorkout {
-  workoutType: {
-    name: string;
-  };
-}
+/* ---------- UTILS ---------- */
 
-/* ================= COMPONENT ================= */
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
 
-const StudentHome: React.FC = () => {
+const isSameWeek = (date: Date, now: Date) => {
+  const start = new Date(now);
+  start.setDate(start.getDate() - start.getDay());
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+
+  return date >= start && date < end;
+};
+
+const calculateStreak = (history: HistoryItem[]) => {
+  let streak = 0;
+  const day = new Date();
+
+  while (
+    history.some(
+      (h) => h.completed && isSameDay(new Date(h.date), day)
+    )
+  ) {
+    streak++;
+    day.setDate(day.getDate() - 1);
+  }
+
+  return streak;
+};
+
+/* ---------- COMPONENT ---------- */
+
+const StudentHome = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [trainer, setTrainer] = useState<Trainer | null>(null);
-  const [todayWorkout, setTodayWorkout] = useState<TodayWorkout | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [planned, setPlanned] = useState(0);
 
   useEffect(() => {
-    if (!user?.trainerId) return;
+    if (!user) return;
 
-    // Buscar dados do personal
-    api
-      .get(`/trainers/${user.trainerId}`)
-      .then((res) => setTrainer(res.data))
-      .catch(() => setTrainer(null));
+    api.get(`/history/student/${user.id}`).then((res) => {
+      setHistory(res.data);
+    });
 
-    // Buscar treino de hoje
-    api
-      .get(`/student-workouts/today/${user.id}`)
-      .then((res) => setTodayWorkout(res.data))
-      .catch(() => setTodayWorkout(null));
+    api.get(`/student-workouts/schedule/${user.id}`).then((res) => {
+      setPlanned(res.data.length);
+    });
   }, [user]);
 
+  const completedThisWeek = useMemo(
+    () =>
+      history.filter(
+        (h) =>
+          h.completed &&
+          isSameWeek(new Date(h.date), new Date())
+      ).length,
+    [history]
+  );
+
+  const streak = useMemo(
+    () => calculateStreak(history),
+    [history]
+  );
+
   return (
-    <Container>
-      <BrandHeader>
-        {trainer?.logoUrl && <Logo src={trainer.logoUrl} alt="Logo do personal" />}
-        <TrainerName>{trainer?.name || "Seu personal"}</TrainerName>
-        <Subtitle>Treinos personalizados para você</Subtitle>
-      </BrandHeader>
+    <>
+      <PageTitle>Início</PageTitle>
 
-      <Card>
-        <CardTitle>Treino de hoje</CardTitle>
-        {todayWorkout ? (
-          <>
-            <CardText>{todayWorkout.workoutType.name}</CardText>
-            <Button fullWidth onClick={() => navigate("/student/today")}>
-              Iniciar treino
-            </Button>
-          </>
-        ) : (
-          <CardText>Hoje é dia de descanso 💆‍♂️</CardText>
-        )}
-      </Card>
+      <Cards>
+        <Card>
+          <Label>📊 Esta semana</Label>
+          <Value>
+            {completedThisWeek} / {planned} treinos
+          </Value>
+        </Card>
 
-      <Card>
-        <CardTitle>Sua semana</CardTitle>
-        <CardText>Veja todos os treinos planejados pelo seu personal.</CardText>
-        <Button
-          variant="secondary"
-          fullWidth
-          onClick={() => navigate("/student/week")}
-        >
-          Ver semana completa
-        </Button>
-      </Card>
-    </Container>
+        <Card>
+          <Label>🔥 Sequência atual</Label>
+          <Value>{streak} dias</Value>
+        </Card>
+
+        <PrimaryButton onClick={() => navigate("/student/today")}>
+          ▶️ Iniciar treino de hoje
+        </PrimaryButton>
+      </Cards>
+    </>
   );
 };
 

@@ -30,6 +30,7 @@ import StudentProfile from "../pages/student/Profile";
 import Account from "../pages/Account/Account";
 import TrainingHub from "../pages/trainer/TrainingHub/TrainingHub";
 import StudentDay from "../pages/student/StudentDay";
+import StudentHome from "../pages/student/StudentHome";
 /* =========================
    PRIVATE ROUTE
 ========================= */
@@ -260,6 +261,17 @@ const AppRoutes: React.FC = () => {
             <PrivateRoute roles={["STUDENT"]}>
               <StudentLayout>
                 <StudentProfile />
+              </StudentLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/student/home"
+          element={
+            <PrivateRoute roles={["STUDENT"]}>
+              <StudentLayout>
+                <StudentHome />
               </StudentLayout>
             </PrivateRoute>
           }
