@@ -9,9 +9,11 @@ import { BottomNav } from "./BottomNav";
 const Wrapper = styled.div<{ $bg?: string }>`
   min-height: 100vh;
   padding: 16px;
-  padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* espaço do menu inferior */
+  padding-bottom: calc(
+    96px + env(safe-area-inset-bottom)
+  ); /* espaço do menu inferior */
   position: relative;
-
+  z-index: 0;
   background-color: ${({ theme }) => theme.bg.primary};
 
   /* Imagem do personal apenas como detalhe visual */
@@ -22,6 +24,7 @@ const Wrapper = styled.div<{ $bg?: string }>`
         content: "";
         position: absolute;
         inset: 0;
+        z-index: -1;
         background-image: url(${$bg});
         background-repeat: no-repeat;
         background-position: center top 120px;

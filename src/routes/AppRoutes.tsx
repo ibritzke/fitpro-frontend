@@ -22,7 +22,7 @@ import WorkoutTypes from "../pages/trainer/WorkoutTypes";
 import Templates from "../pages/trainer/Templates";
 
 // Student
-import StudentToday from "../pages/student/Today";
+import StudentToday from "../pages/student/StudentToday";
 import StudentHistory from "../pages/student/History";
 import StudentWeek from "../pages/student/StudentWeek";
 import StudentProfile from "../pages/student/Profile";

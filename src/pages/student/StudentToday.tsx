@@ -58,6 +58,33 @@ const SetNum = styled.div<{ done?: boolean }>`
   font-weight: 600;
 `;
 
+const TimerOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TimerBox = styled.div`
+  background: ${({ theme }) => theme.bg.card};
+  border-radius: 20px;
+  padding: 32px;
+  min-width: 220px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+`;
+
+const TimerSeconds = styled.div`
+  font-size: 48px;
+  font-weight: 700;
+`;
 
 /* ================= TYPES ================= */
 
@@ -95,6 +122,7 @@ const StudentToday: React.FC = () => {
   const [editedWeights, setEditedWeights] = useState<Record<string, number>>(
     {},
   );
+  const [editingWeight, setEditingWeight] = useState<string | null>(null);
   const [timer, setTimer] = useState<{ seconds: number; active: boolean }>({
     seconds: 0,
     active: false,
@@ -140,6 +168,21 @@ const StudentToday: React.FC = () => {
 
   return (
     <div>
+      {timer.active && (
+        <TimerOverlay>
+          <TimerBox>
+            <p>Descanso</p>
+            <TimerSeconds>{timer.seconds}s</TimerSeconds>
+            <Button
+              variant="secondary"
+              onClick={() => setTimer({ seconds: 0, active: false })}
+            >
+              Pular descanso
+            </Button>
+          </TimerBox>
+        </TimerOverlay>
+      )}
+
       <PageTitle>Treino de hoje</PageTitle>
       <Sub>
         {todayLabel} · {workout.workoutType.name}
@@ -151,11 +194,7 @@ const StudentToday: React.FC = () => {
 
         return (
           <ExCard key={ex.exercise.id}>
-            {timer.active && (
-              <div style={{ textAlign: "center", marginBottom: 16 }}>
-                ⏱️ Descanso: {timer.seconds}s
-              </div>
-            )}
+            {/* timer.active */}
             <ExName>{ex.exercise.name}</ExName>
 
             {/* Observação */}
@@ -189,22 +228,36 @@ const StudentToday: React.FC = () => {
                   <SetNum done={isDone}>{isDone ? "✓" : setIdx + 1}</SetNum>
 
                   {/* Peso editável */}
-                  <input
-                    type="number"
-                    value={weight}
-                    onChange={(e) =>
-                      setEditedWeights((prev) => ({
-                        ...prev,
-                        [ex.exercise.id]: Number(e.target.value),
-                      }))
-                    }
+<></>
+                  <div
                     style={{
-                      width: 60,
-                      padding: 6,
-                      borderRadius: 6,
-                      border: "1px solid #444",
+                      marginLeft: "auto",
+                      fontWeight: 600,
+                      cursor: "pointer",
                     }}
-                  />
+                    onClick={() => setEditingWeight(ex.exercise.id)}
+                  >
+                    {editingWeight === ex.exercise.id ? (
+                      <input
+                        type="number"
+                        autoFocus
+                        value={weight}
+                        onBlur={() => setEditingWeight(null)}
+                        onChange={(e) =>
+                          setEditedWeights((prev) => ({
+                            ...prev,
+                            [ex.exercise.id]: Number(e.target.value),
+                          }))
+                        }
+                        style={{
+                          width: 60,
+                          padding: 4,
+                        }}
+                      />
+                    ) : (
+                      <span>{weight} kg</span>
+                    )}
+                  </div>
 
                   <span>{ex.reps} reps</span>
 
@@ -238,7 +291,7 @@ const StudentToday: React.FC = () => {
                       }
                     }}
                   >
-                    {isDone ? "OK" : "Concluir"}
+                    {isDone ? "✅" : "Concluir"}
                   </Button>
                 </SetRow>
               );
