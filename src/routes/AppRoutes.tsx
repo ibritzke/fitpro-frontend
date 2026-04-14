@@ -27,7 +27,7 @@ import StudentHistory from "../pages/student/History";
 import StudentWeek from "../pages/student/StudentWeek";
 import StudentProfile from "../pages/student/Profile";
 // depois: StudentHome, StudentWeek, StudentProfile
-
+import Account from "../pages/Account/Account";
 /* =========================
    PRIVATE ROUTE
 ========================= */
@@ -67,7 +67,7 @@ const RedirectByRole: React.FC = () => {
     case "TRAINER":
       return <Navigate to="/trainer/dashboard" replace />;
     case "STUDENT":
-      return <Navigate to="/student/today" replace />;
+      return <Navigate to="/student/home" replace />;
     default:
       return <Navigate to="/login" replace />;
   }
@@ -82,6 +82,18 @@ const AppRoutes: React.FC = () => {
       <Routes>
         {/* PUBLIC */}
         <Route path="/login" element={<Login />} />
+
+        {/* ACCOUNT (Admin / Trainer / Student) */}
+        <Route
+          path="/account"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Account />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
 
         {/* ADMIN */}
         <Route
@@ -218,20 +230,16 @@ const AppRoutes: React.FC = () => {
           }
         />
 
-        
-<Route
-  path="/student/profile"
-  element={
-    <PrivateRoute roles={["STUDENT"]}>
-      <StudentLayout>
-        <StudentProfile />
-      </StudentLayout>
-    </PrivateRoute>
-  }
-/>
-
-
-        
+        <Route
+          path="/student/profile"
+          element={
+            <PrivateRoute roles={["STUDENT"]}>
+              <StudentLayout>
+                <StudentProfile />
+              </StudentLayout>
+            </PrivateRoute>
+          }
+        />
 
         {/* NOT AUTHORIZED */}
         <Route

@@ -63,6 +63,7 @@ export const BottomNav = () => {
           <Item to="/trainer/students"><Icon>👥</Icon>Alunos</Item>
           <Item to="/trainer/workout-types"><Icon>🏋️</Icon>Treinos</Item>
           <Item to="/trainer/templates"><Icon>📋</Icon>Templates</Item>
+          <Item to="/account"><Icon>👤</Icon>Conta</Item>
         </>
       )}
 
@@ -70,6 +71,7 @@ export const BottomNav = () => {
         <>
           <Item to="/admin/dashboard"><Icon>📊</Icon>Dashboard</Item>
           <Item to="/admin/trainers"><Icon>🧑‍🏫</Icon>Personais</Item>
+          <Item to="/account"><Icon>👤</Icon>Conta</Item>
         </>
       )}
     </Nav>

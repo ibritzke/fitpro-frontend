@@ -36,9 +36,11 @@ const MenuButton = styled.button`
   cursor: pointer;
   padding: 4px;
 
-  @media (min-width: 769px) {
+
+@media (max-width: 768px) {
     display: none;
   }
+
 `;
 
 const Title = styled.h1`
