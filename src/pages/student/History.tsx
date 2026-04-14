@@ -2,6 +2,14 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "../../services/api";
 
+const groupByDate = (items: HistoryItem[]) => {
+  return items.reduce<Record<string, HistoryItem[]>>((acc, item) => {
+    const key = new Date(item.date).toLocaleDateString("pt-BR");
+    acc[key] = acc[key] || [];
+    acc[key].push(item);
+    return acc;
+  }, {});
+};
 
 const PageTitle = styled.h1`
   font-size: 18px;
@@ -48,24 +56,11 @@ const Badge = styled.span<{ completed: boolean }>`
   font-weight: 500;
 
   background: ${({ completed, theme }) =>
-    completed
-      ? `${theme.accent.success}20`
-      : theme.bg.secondary};
+    completed ? `${theme.accent.success}20` : theme.bg.secondary};
 
   color: ${({ completed, theme }) =>
     completed ? theme.accent.success : theme.text.tertiary};
 `;
-
-
-
-
-
-
-
-
-
-
-
 
 interface HistoryItem {
   id: string;
@@ -80,7 +75,6 @@ interface HistoryItem {
    COMPONENTE
 ========================= */
 
-
 const StudentHistory: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
@@ -88,36 +82,41 @@ const StudentHistory: React.FC = () => {
     api.get("/history?days=90").then((res) => setHistory(res.data));
   }, []);
 
+  const grouped = groupByDate(history);
   return (
     <div>
       <PageTitle>Histórico</PageTitle>
 
       <List>
-        {history.map((h) => (
-          <Item key={h.id}>
-            <Info>
-              <Main>
-                {h.weight ? `${h.weight}kg` : "Sem peso"} ·{" "}
-                {h.setsCompleted || 0} séries
-              </Main>
+        {Object.entries(grouped).map(([day, items]) => (
+          <div key={day}>
+            <PageTitle>{day}</PageTitle>
 
-              <DateText>
-                {new Date(h.date).toLocaleDateString("pt-BR", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </DateText>
-            </Info>
+            <List>
+              {items.map((h) => (
+                <Item key={h.id}>
+                  <Info>
+                    <Main>
+                      {h.weight ? `${h.weight}kg` : "Sem peso"} ·{" "}
+                      {h.setsCompleted || 0} séries
+                    </Main>
 
-            <Badge completed={h.completed}>
-              {h.completed ? "Concluído" : "Parcial"}
-            </Badge>
-          </Item>
+                    <DateText>
+                      {new Date(h.date).toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </DateText>
+                  </Info>
+
+                  <Badge completed={h.completed}>
+                    {h.completed ? "Concluído" : "Parcial"}
+                  </Badge>
+                </Item>
+              ))}
+            </List>
+          </div>
         ))}
-
         {history.length === 0 && (
           <p
             style={{

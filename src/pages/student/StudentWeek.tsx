@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
-
+import { useNavigate } from "react-router-dom";
 const DAYS = [
   "Domingo",
   "Segunda",
@@ -12,7 +12,6 @@ const DAYS = [
   "Sexta",
   "Sábado",
 ];
-
 const Container = styled.div`
   padding: 16px;
 `;
@@ -50,11 +49,12 @@ const DayCard = styled.div<{ $today?: boolean; $hasWorkout?: boolean }>`
     $today
       ? theme.accent.primary + "20"
       : $hasWorkout
-      ? theme.bg.card
-      : theme.bg.secondary};
+        ? theme.bg.card
+        : theme.bg.secondary};
 
-  border: 1px solid ${({ theme, $today }) =>
-    $today ? theme.accent.primary : theme.border.light};
+  border: 1px solid
+    ${({ theme, $today }) =>
+      $today ? theme.accent.primary : theme.border.light};
 
   transition: transform 0.1s;
 
@@ -95,20 +95,36 @@ interface WeekWorkout {
   };
 }
 
+interface HistoryItem {
+  id: string;
+  exerciseId: string;
+  date: string;
+  weight?: number;
+  setsCompleted?: number;
+  completed: boolean;
+}
+
 const StudentWeek: React.FC = () => {
   const { user } = useAuth();
   const [week, setWeek] = useState<WeekWorkout[]>([]);
-
+  const navigate = useNavigate();
   const today = new Date().getDay();
-
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   useEffect(() => {
     if (!user) return;
-
+    api.get("/history?days=7").then((res) => setHistory(res.data));
     api
       .get(`/student-workouts/week/${user.id}`)
       .then((res) => setWeek(res.data))
       .catch(() => setWeek([]));
   }, [user]);
+
+  const isDayCompleted = (dayIndex: number) => {
+    return history.some((h) => {
+      const d = new Date(h.date);
+      return d.getDay() === dayIndex && h.completed;
+    });
+  };
 
   const getWorkoutForDay = (dayIndex: number) =>
     week.find((w) => w.dayOfWeek === dayIndex);
@@ -130,6 +146,7 @@ const StudentWeek: React.FC = () => {
               key={index}
               $today={isToday}
               $hasWorkout={!!workout}
+              onClick={() => navigate(`/student/day/${index}`)}
             >
               <DayLeft>
                 <DayName>{day}</DayName>
@@ -139,7 +156,13 @@ const StudentWeek: React.FC = () => {
               </DayLeft>
 
               <Badge $rest={!workout}>
-                {isToday ? "Hoje" : workout ? "Treino" : "Descanso"}
+                {isDayCompleted(index)
+                  ? "✅ Concluído"
+                  : isToday
+                    ? "Hoje"
+                    : workout
+                      ? "Treino"
+                      : "Descanso"}
               </Badge>
             </DayCard>
           );

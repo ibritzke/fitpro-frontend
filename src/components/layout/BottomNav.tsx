@@ -7,7 +7,7 @@ const Nav = styled.nav`
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: calc(60px + env(safe-area-inset-bottom));
 
   background: ${({ theme }) => theme.bg.card};
   border-top: 1px solid ${({ theme }) => theme.border.light};

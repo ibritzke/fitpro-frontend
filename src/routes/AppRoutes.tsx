@@ -29,6 +29,7 @@ import StudentProfile from "../pages/student/Profile";
 // depois: StudentHome, StudentWeek, StudentProfile
 import Account from "../pages/Account/Account";
 import TrainingHub from "../pages/trainer/TrainingHub/TrainingHub";
+import StudentDay from "../pages/student/StudentDay";
 /* =========================
    PRIVATE ROUTE
 ========================= */
@@ -215,6 +216,17 @@ const AppRoutes: React.FC = () => {
             <PrivateRoute roles={["STUDENT"]}>
               <StudentLayout>
                 <StudentToday />
+              </StudentLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/student/day/:day"
+          element={
+            <PrivateRoute roles={["STUDENT"]}>
+              <StudentLayout>
+                <StudentDay />
               </StudentLayout>
             </PrivateRoute>
           }

@@ -8,7 +8,8 @@ import { BottomNav } from "./BottomNav";
 
 const Wrapper = styled.div<{ $bg?: string }>`
   min-height: 100vh;
-  padding-bottom: 70px; /* espaço do menu inferior */
+  padding: 16px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* espaço do menu inferior */
   position: relative;
 
   background-color: ${({ theme }) => theme.bg.primary};
@@ -25,7 +26,7 @@ const Wrapper = styled.div<{ $bg?: string }>`
         background-repeat: no-repeat;
         background-position: center top 120px;
         background-size: 280px auto;
-        opacity: 0.05; /* 👈 ajuste fino */
+        opacity: 0.05; 
         pointer-events: none;
       }
     `}
