@@ -63,15 +63,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <LayoutContainer>
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <ContentWrapper>
-        <Header title="Painel Admin" onMenuClick={() => setIsSidebarOpen(true)} />
+        <Header
+          title="Painel Admin"
+          onMenuClick={() => setIsSidebarOpen(true)}
+        />
         <Main>{children}</Main>
       </ContentWrapper>
+
+      {/* ✅ MENU INFERIOR PARA MOBILE */}
       <BottomNav />
     </LayoutContainer>
   );
