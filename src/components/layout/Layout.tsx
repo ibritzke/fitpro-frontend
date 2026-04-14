@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-
+import { BottomNav } from "./BottomNav";
 /**
  * Layout principal do app.
  * Estrutura em "App Shell", padrão usado por apps modernos:
@@ -14,7 +14,7 @@ const LayoutContainer = styled.div`
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  background-color: #f4f5f7;
+  background: ${({ theme }) => theme.bg.card};
 
   /* Mobile: Sidebar deixa de ocupar espaço fixo */
   @media (max-width: 768px) {
@@ -72,6 +72,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
         <Header title="Painel Admin" onMenuClick={() => setIsSidebarOpen(true)} />
         <Main>{children}</Main>
       </ContentWrapper>
+      <BottomNav />
     </LayoutContainer>
   );
 };

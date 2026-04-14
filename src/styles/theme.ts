@@ -29,16 +29,17 @@ export const lightTheme = {
 
 export const darkTheme = {
   bg: {
-    primary: "#111111",
-    secondary: "#1a1a1a",
-    tertiary: "#222222",
-    card: "#1e1e1e",
-    sidebar: "#0f0f0f",
+    primary: "#0f1115",
+    secondary: "#161a22",
+    card: "#1c2230",
+    sidebar: "#10131a",
+    tertiary: "#0b0e14",
   },
   text: {
-    primary: "#f5f5f5",
-    secondary: "#aaaaaa",
-    tertiary: "#666666",
+    primary: "#f1f5f9",
+    secondary: "#cbd5e1",
+    tertiary: "#94a3b8",
+
     inverse: "#111111",
   },
   accent: {
