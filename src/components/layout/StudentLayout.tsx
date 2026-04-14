@@ -11,21 +11,24 @@ const Wrapper = styled.div<{ $bg?: string }>`
   padding-bottom: 70px; /* espaço do menu inferior */
   position: relative;
 
-  background-color: ${({ theme }) => theme.bg.tertiary};
+  background-color: ${({ theme }) => theme.bg.primary};
 
+  /* Imagem do personal apenas como detalhe visual */
   ${({ $bg }) =>
     $bg &&
     `
-    background-image:
-      linear-gradient(
-        rgba(255,255,255,0.92),
-        rgba(255,255,255,0.92)
-      ),
-      url(${$bg});
-    background-repeat: no-repeat;
-    background-position: center 120px;
-    background-size: 280px auto;
-  `}
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url(${$bg});
+        background-repeat: no-repeat;
+        background-position: center top 120px;
+        background-size: 280px auto;
+        opacity: 0.05; /* 👈 ajuste fino */
+        pointer-events: none;
+      }
+    `}
 
   @media (min-width: 768px) {
     padding-bottom: 0;
@@ -33,7 +36,6 @@ const Wrapper = styled.div<{ $bg?: string }>`
 `;
 
 /* ================= COMPONENT ================= */
-
 
 export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({
   children,

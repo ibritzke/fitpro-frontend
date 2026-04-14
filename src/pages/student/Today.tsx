@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { api } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
 /* ================= HEADER ================= */
 
@@ -57,22 +58,18 @@ const SetNum = styled.div<{ done?: boolean }>`
   font-weight: 600;
 `;
 
-const SetData = styled.div`
-  flex: 1;
-  background: ${({ theme }) => theme.bg.secondary};
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-`;
 
 /* ================= TYPES ================= */
 
 interface ExerciseData {
+  id: string; // id da relação WorkoutTypeExercise
   sets: number;
   reps: string;
   kg: number;
+  restTime?: number;
+  observation?: string;
+  videoUrl?: string;
+
   exercise: {
     id: string;
     name: string;
@@ -91,7 +88,17 @@ interface WorkoutDay {
 const StudentToday: React.FC = () => {
   const { user } = useAuth();
   const [workout, setWorkout] = useState<WorkoutDay | null>(null);
-  const [completedSets, setCompletedSets] = useState<Record<number, number>>({});
+  const navigate = useNavigate();
+  const [exerciseProgress, setExerciseProgress] = useState<
+    Record<string, number>
+  >({});
+  const [editedWeights, setEditedWeights] = useState<Record<string, number>>(
+    {},
+  );
+  const [timer, setTimer] = useState<{ seconds: number; active: boolean }>({
+    seconds: 0,
+    active: false,
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -101,6 +108,19 @@ const StudentToday: React.FC = () => {
       .then((r) => setWorkout(r.data))
       .catch(() => setWorkout(null));
   }, [user]);
+
+  useEffect(() => {
+    if (!timer.active || timer.seconds <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((t) => ({
+        ...t,
+        seconds: t.seconds - 1,
+      }));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const todayLabel = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -121,48 +141,108 @@ const StudentToday: React.FC = () => {
   return (
     <div>
       <PageTitle>Treino de hoje</PageTitle>
-      <Sub>{todayLabel} · {workout.workoutType.name}</Sub>
+      <Sub>
+        {todayLabel} · {workout.workoutType.name}
+      </Sub>
 
-      {workout.workoutType.exercises.map((ex, exIdx) => {
-        const done = completedSets[exIdx] || 0;
+      {workout.workoutType.exercises.map((ex) => {
+        const done = exerciseProgress[ex.exercise.id] || 0;
+        const weight = editedWeights[ex.exercise.id] ?? ex.kg;
 
         return (
           <ExCard key={ex.exercise.id}>
+            {timer.active && (
+              <div style={{ textAlign: "center", marginBottom: 16 }}>
+                ⏱️ Descanso: {timer.seconds}s
+              </div>
+            )}
             <ExName>{ex.exercise.name}</ExName>
 
-            {Array.from({ length: ex.sets }).map((_, setIdx) => (
-              <SetRow key={setIdx}>
-                <SetNum done={setIdx < done}>
-                  {setIdx < done ? "✓" : setIdx + 1}
-                </SetNum>
+            {/* Observação */}
+            {ex.observation && (
+              <p style={{ fontSize: 12, marginBottom: 8 }}>
+                📝 {ex.observation}
+              </p>
+            )}
 
-                <SetData
-                  onClick={async () => {
-                    if (setIdx !== done) return;
+            {/* Vídeo */}
+            {ex.videoUrl && (
+              <a
+                href={ex.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: 12,
+                  marginBottom: 8,
+                  display: "inline-block",
+                }}
+              >
+                ▶️ Ver vídeo
+              </a>
+            )}
 
-                    const next = done + 1;
+            {Array.from({ length: ex.sets }).map((_, setIdx) => {
+              const isDone = setIdx < done;
 
-                    setCompletedSets((prev) => ({
-                      ...prev,
-                      [exIdx]: next,
-                    }));
+              return (
+                <SetRow key={setIdx}>
+                  <SetNum done={isDone}>{isDone ? "✓" : setIdx + 1}</SetNum>
 
-                    // ✅ AO FINALIZAR TODAS AS SÉRIES → SALVA HISTÓRICO
-                    if (next === ex.sets) {
-                      await api.post("/history", {
-                        exerciseId: ex.exercise.id,
-                        weight: ex.kg,
-                        setsCompleted: ex.sets,
-                        completed: true,
-                      });
+                  {/* Peso editável */}
+                  <input
+                    type="number"
+                    value={weight}
+                    onChange={(e) =>
+                      setEditedWeights((prev) => ({
+                        ...prev,
+                        [ex.exercise.id]: Number(e.target.value),
+                      }))
                     }
-                  }}
-                >
+                    style={{
+                      width: 60,
+                      padding: 6,
+                      borderRadius: 6,
+                      border: "1px solid #444",
+                    }}
+                  />
+
                   <span>{ex.reps} reps</span>
-                  <span>{ex.kg} kg</span>
-                </SetData>
-              </SetRow>
-            ))}
+
+                  <Button
+                    size="sm"
+                    disabled={isDone}
+                    onClick={async () => {
+                      const next = done + 1;
+
+                      setExerciseProgress((prev) => ({
+                        ...prev,
+                        [ex.exercise.id]: next,
+                      }));
+
+                      // Inicia descanso
+                      if (ex.restTime) {
+                        setTimer({
+                          seconds: ex.restTime,
+                          active: true,
+                        });
+                      }
+
+                      // Finalizou todas as séries → salva histórico
+                      if (next === ex.sets) {
+                        await api.post("/history", {
+                          exerciseId: ex.exercise.id,
+                          weight,
+                          setsCompleted: ex.sets,
+                          completed: true,
+                        });
+                      }
+                    }}
+                  >
+                    {isDone ? "OK" : "Concluir"}
+                  </Button>
+                </SetRow>
+              );
+            })}
           </ExCard>
         );
       })}
@@ -170,7 +250,7 @@ const StudentToday: React.FC = () => {
       <Button
         fullWidth
         style={{ marginBottom: 24 }}
-        onClick={() => (window.location.href = "/student/week")}
+        onClick={() => navigate("/student/week")}
       >
         ✅ Finalizar treino
       </Button>
