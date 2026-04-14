@@ -14,21 +14,8 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-/**
- * Overlay usado apenas no mobile.
- * Clicar fora da Sidebar fecha o menu.
- */
-const Overlay = styled.div<{ isOpen: boolean }>`
-  display: none;
 
-  @media (max-width: 768px) {
-    display: ${({ isOpen }) => (isOpen ? "block" : "none")};
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 999;
-  }
-`;
+
 
 const SidebarContainer = styled.aside<{ isOpen: boolean }>`
   width: 260px;
@@ -43,18 +30,14 @@ const SidebarContainer = styled.aside<{ isOpen: boolean }>`
   /* Desktop */
   position: sticky;
   top: 0;
-
-  /* Mobile: vira drawer */
+  
+  /* 🔴 ESCONDE A SIDEBAR NO MOBILE */
   @media (max-width: 768px) {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    transform: ${({ isOpen }) =>
-      isOpen ? "translateX(0)" : "translateX(-100%)"};
-    transition: transform 0.3s ease;
+    display: none;
   }
+
 `;
+
 
 const Logo = styled.div`
   padding: 0 20px 24px;
@@ -123,10 +106,7 @@ const BottomBtn = styled.button`
   }
 `;
 
-export const Sidebar: React.FC<SidebarProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -147,10 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <>
-      <Overlay isOpen={isOpen} onClick={onClose} />
-
-      <SidebarContainer isOpen={isOpen}>
+    <SidebarContainer isOpen={isOpen}>
         <Logo>FitPro</Logo>
 
         <NavSection>
@@ -207,6 +184,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <BottomBtn onClick={handleLogout}>⎋ Sair</BottomBtn>
         </SidebarBottom>
       </SidebarContainer>
-    </>
   );
 };
