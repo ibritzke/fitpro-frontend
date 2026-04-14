@@ -28,6 +28,7 @@ import StudentWeek from "../pages/student/StudentWeek";
 import StudentProfile from "../pages/student/Profile";
 // depois: StudentHome, StudentWeek, StudentProfile
 import Account from "../pages/Account/Account";
+import TrainingHub from "../pages/trainer/TrainingHub/TrainingHub";
 /* =========================
    PRIVATE ROUTE
 ========================= */
@@ -191,6 +192,17 @@ const AppRoutes: React.FC = () => {
             <PrivateRoute roles={["TRAINER"]}>
               <Layout>
                 <Templates />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/trainer/training"
+          element={
+            <PrivateRoute roles={["TRAINER"]}>
+              <Layout>
+                <TrainingHub />
               </Layout>
             </PrivateRoute>
           }

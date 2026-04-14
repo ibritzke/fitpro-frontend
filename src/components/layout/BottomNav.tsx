@@ -49,29 +49,48 @@ export const BottomNav = () => {
     <Nav>
       {user.role === "STUDENT" && (
         <>
-          <Item to="/student/home"><Icon>🏠</Icon>Início</Item>
-          <Item to="/student/week"><Icon>📅</Icon>Semana</Item>
-          <Item to="/student/today"><Icon>▶️</Icon>Hoje</Item>
-          <Item to="/student/history"><Icon>📊</Icon>Histórico</Item>
-          <Item to="/student/profile"><Icon>👤</Icon>Perfil</Item>
+          <Item to="/student/home">
+            <Icon>🏠</Icon>Início
+          </Item>
+          <Item to="/student/week">
+            <Icon>📅</Icon>Semana
+          </Item>
+          <Item to="/student/today">
+            <Icon>▶️</Icon>Hoje
+          </Item>
+          <Item to="/student/history">
+            <Icon>📊</Icon>Histórico
+          </Item>
+          <Item to="/student/profile">
+            <Icon>👤</Icon>Perfil
+          </Item>
         </>
       )}
 
       {user.role === "TRAINER" && (
         <>
-          <Item to="/trainer/dashboard"><Icon>🏠</Icon>Dashboard</Item>
-          <Item to="/trainer/students"><Icon>👥</Icon>Alunos</Item>
-          <Item to="/trainer/workout-types"><Icon>🏋️</Icon>Treinos</Item>
-          <Item to="/trainer/templates"><Icon>📋</Icon>Templates</Item>
-          <Item to="/account"><Icon>👤</Icon>Conta</Item>
+          <Item to="/trainer/dashboard">
+            <Icon>🏠</Icon>Dashboard
+          </Item>
+          <Item to="/trainer/students">
+            <Icon>👥</Icon>Alunos
+          </Item>
+          <Item to="/trainer/training">
+            <Icon>🧰</Icon>Treinos
+          </Item>
+        
         </>
       )}
 
       {user.role === "ADMIN" && (
         <>
-          <Item to="/admin/dashboard"><Icon>📊</Icon>Dashboard</Item>
-          <Item to="/admin/trainers"><Icon>🧑‍🏫</Icon>Personais</Item>
-          <Item to="/account"><Icon>👤</Icon>Conta</Item>
+          <Item to="/admin/dashboard">
+            <Icon>📊</Icon>Dashboard
+          </Item>
+          <Item to="/admin/trainers">
+            <Icon>🧑‍🏫</Icon>Personais
+          </Item>
+      
         </>
       )}
     </Nav>

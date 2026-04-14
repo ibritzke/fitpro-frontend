@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-
+import { Avatar } from "../ui/Avatar";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 interface HeaderProps {
   title?: string;
   onMenuClick: () => void;
@@ -8,7 +10,7 @@ interface HeaderProps {
 
 const HeaderContainer = styled.header`
   height: 56px;
- background: ${({ theme }) => theme.bg.primary};
+  background: ${({ theme }) => theme.bg.primary};
   border-bottom: 1px solid #e5e7eb;
 
   display: flex;
@@ -36,11 +38,9 @@ const MenuButton = styled.button`
   cursor: pointer;
   padding: 4px;
 
-
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
     display: none;
   }
-
 `;
 
 const Title = styled.h1`
@@ -55,6 +55,22 @@ const Right = styled.div`
 `;
 
 export const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAvatarClick = () => {
+    if (!user) return;
+
+    // ✅ ALUNO vai para o perfil
+    if (user.role === "STUDENT") {
+      navigate("/student/profile");
+      return;
+    }
+
+    // ✅ ADMIN / TRAINER vão para conta
+    navigate("/account");
+  };
+
   return (
     <HeaderContainer>
       <Left>
@@ -62,7 +78,9 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
         {title && <Title>{title}</Title>}
       </Left>
 
-      <Right>{/* futuras ações/avatar */}</Right>
+      <Right>
+        {user && <Avatar name={user.name} onClick={handleAvatarClick} />}
+      </Right>
     </HeaderContainer>
   );
 };
