@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { api } from "../../services/api";
@@ -139,12 +140,30 @@ interface WorkoutDay {
 const StudentToday: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
+  const [workoutCompletedToday, setWorkoutCompletedToday] = useState(false);
+  const todayKey = `student:${user?.id}:today:${new Date().toISOString().slice(0, 10)}`;
   const [workout, setWorkout] = useState<WorkoutDay | null>(null);
-  const [progress, setProgress] = useState<Record<string, number>>({});
-  const [editedWeights, setEditedWeights] = useState<Record<string, number>>({});
+  const [progress, setProgress] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem(todayKey);
+      if (!saved) return {};
+      return JSON.parse(saved).progress || {};
+    } catch {
+      return {};
+    }
+  });
+  const [editedWeights, setEditedWeights] = useState<Record<string, number>>(
+    () => {
+      try {
+        const saved = localStorage.getItem(todayKey);
+        if (!saved) return {};
+        return JSON.parse(saved).editedWeights || {};
+      } catch {
+        return {};
+      }
+    },
+  );
   const [editingWeight, setEditingWeight] = useState<string | null>(null);
-
   const [timer, setTimer] = useState<{ active: boolean; seconds: number }>({
     active: false,
     seconds: 0,
@@ -154,10 +173,40 @@ const StudentToday: React.FC = () => {
     if (!user) return;
 
     api
+      .get(`/history`)
+      .then((res) => {
+        const today = new Date().toDateString();
+
+        const completedToday = res.data.some((h: any) => {
+          return h.completed && new Date(h.date).toDateString() === today;
+        });
+
+        setWorkoutCompletedToday(completedToday);
+      })
+      .catch(() => {
+        setWorkoutCompletedToday(false);
+      });
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    api
       .get(`/student-workouts/today/${user.id}`)
       .then((res) => setWorkout(res.data))
       .catch(() => setWorkout(null));
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const payload = {
+      progress,
+      editedWeights,
+    };
+
+    localStorage.setItem(todayKey, JSON.stringify(payload));
+  }, [progress, editedWeights, user]);
 
   useEffect(() => {
     if (!timer.active || timer.seconds <= 0) return;
@@ -184,7 +233,35 @@ const StudentToday: React.FC = () => {
       </>
     );
   }
+  if (workoutCompletedToday) {
+    return (
+      <ExCard
+        style={{
+          background: "linear-gradient(135deg, #16a34a20, #16653420)",
+          borderColor: "#22c55e",
+        }}
+      >
+        <ExName>✅ Treino concluído</ExName>
+        <p style={{ fontSize: 13, marginTop: 6 }}>
+          Você já finalizou o treino de hoje.
+        </p>
 
+        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => navigate("/student/history")}
+          >
+            Ver histórico
+          </Button>
+
+          <Button size="sm" onClick={() => navigate("/student/week")}>
+            Ver semana
+          </Button>
+        </div>
+      </ExCard>
+    );
+  }
   return (
     <>
       {timer.active && (
@@ -255,6 +332,7 @@ const StudentToday: React.FC = () => {
                     key={idx}
                     done={isDone}
                     onClick={async () => {
+                      if (workoutCompletedToday) return;
                       if (isDone) return;
 
                       const next = done + 1;
@@ -286,7 +364,13 @@ const StudentToday: React.FC = () => {
         );
       })}
 
-      <Button fullWidth onClick={() => navigate("/student/week")}>
+      <Button
+        fullWidth
+        onClick={() => {
+          localStorage.removeItem(todayKey);
+          navigate("/student/week");
+        }}
+      >
         ✅ Finalizar treino
       </Button>
     </>

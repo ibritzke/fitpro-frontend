@@ -81,10 +81,14 @@ const StudentHistory: React.FC = () => {
   const { user } = useAuth();
   useEffect(() => {
     if (!user?.id) return;
-    api.get(`/history/student/${user.id}`).then((res) => setHistory(res.data));
+    api
+      .get(`/history`)
+      .then((res) => setHistory(res.data))
+      .catch(() => setHistory([]));
   }, [user?.id]);
 
   const grouped = groupByDate(history);
+
   return (
     <div>
       <PageTitle>Histórico</PageTitle>
