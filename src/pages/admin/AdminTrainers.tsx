@@ -126,6 +126,7 @@ interface Trainer {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   status: string;
   lastLogin?: string;
   _count: { students: number };
@@ -139,8 +140,9 @@ const AdminTrainers: React.FC = () => {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<Trainer | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -158,9 +160,10 @@ const AdminTrainers: React.FC = () => {
     setLoading(true);
 
     try {
-      await api.post("/admin/trainers", { name, email, password });
+      await api.post("/admin/trainers", { name, email, phone, password });
       setName("");
       setEmail("");
+      setPhone("");
       setPassword("");
       setShowModal(false);
       fetchTrainers();
@@ -177,6 +180,13 @@ const AdminTrainers: React.FC = () => {
     fetchTrainers();
   };
 
+  const deleteTrainer = async (id: string) => {
+    if (window.confirm("Certeza que deseja excluir este personal?")) {
+      await api.delete(`/admin/trainers/${id}`);
+      fetchTrainers();
+    }
+  };
+
   return (
     <div>
       <PageHeader>
@@ -191,6 +201,7 @@ const AdminTrainers: React.FC = () => {
               <div>
                 <Name>{t.name}</Name>
                 <Email>{t.email}</Email>
+                {t.phone && <Meta>Tel: {t.phone}</Meta>}
               </div>
               <Badge active={t.status === "ACTIVE"}>
                 {t.status === "ACTIVE" ? "Ativo" : "Inativo"}
@@ -219,9 +230,17 @@ const AdminTrainers: React.FC = () => {
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => setEditing(trainers)}
+                onClick={() => setEditing(t)}
               >
                 Editar
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                style={{ background: "#fee2e2", color: "#dc2626", borderColor: "#fca5a5" }}
+                onClick={() => deleteTrainer(t.id)}
+              >
+                Excluir
               </Button>
             </CardActions>
           </UserCard>
@@ -265,6 +284,15 @@ const AdminTrainers: React.FC = () => {
               </InputWrapper>
 
               <InputWrapper>
+                <Label>Telefone (opcional)</Label>
+                <Input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </InputWrapper>
+
+              <InputWrapper>
                 <Label>Senha *</Label>
                 <Input
                   type="password"
@@ -293,6 +321,7 @@ const AdminTrainers: React.FC = () => {
       )}
       {editing && (
         <EditTrainerModal
+          key={editing.id}
           trainer={editing}
           onClose={() => setEditing(null)}
           onSaved={fetchTrainers}

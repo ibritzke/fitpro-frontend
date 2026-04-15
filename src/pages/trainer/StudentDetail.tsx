@@ -130,6 +130,7 @@ interface Student {
   id: string;
   name: string;
   email?: string;
+  phone?: string;
   accessCode: string;
   status: string;
 }
@@ -223,6 +224,7 @@ const StudentDetail: React.FC = () => {
       <SubInfo>
         {student.email || "Sem email"} ·{" "}
         {student.status === "ACTIVE" ? "Ativo" : "Inativo"}
+        {student.phone && ` · Tel: ${student.phone}`}
       </SubInfo>
 
       <CodeBox>
@@ -363,6 +365,7 @@ const StudentDetail: React.FC = () => {
 
       {editing && student && (
         <EditStudentModal
+          key={student.id}
           student={student}
           onClose={() => setEditing(false)}
           onSaved={fetchAll}

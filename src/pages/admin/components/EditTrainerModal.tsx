@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../../services/api";
 import { Button } from "../../../components/ui/Button";
 import { Input, InputWrapper, Label } from "../../../components/ui/Input";
@@ -9,6 +9,7 @@ interface Props {
     id: string;
     name: string;
     email: string;
+    phone?: string;
   };
   onClose: () => void;
   onSaved: () => void;
@@ -17,11 +18,19 @@ interface Props {
 export const EditTrainerModal = ({ trainer, onClose, onSaved }: Props) => {
   const [name, setName] = useState(trainer.name);
   const [email, setEmail] = useState(trainer.email);
+  const [phone, setPhone] = useState(trainer.phone || "");
   const [loading, setLoading] = useState(false);
 
-  const save = async () => {
+  useEffect(() => {
+    setName(trainer.name);
+    setEmail(trainer.email);
+    setPhone(trainer.phone || "");
+  }, [trainer]);
+
+  const save = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
-    await api.patch(`/trainers/${trainer.id}`, { name, email });
+    await api.patch(`/admin/${trainer.id}`, { name, email, phone });
     setLoading(false);
     onSaved();
     onClose();
@@ -32,24 +41,31 @@ export const EditTrainerModal = ({ trainer, onClose, onSaved }: Props) => {
       <ModalBox onClick={(e) => e.stopPropagation()}>
         <h3>Editar personal</h3>
 
-        <InputWrapper>
-          <Label>Nome</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-        </InputWrapper>
+        <form onSubmit={save} style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%" }}>
+          <InputWrapper>
+            <Label>Nome</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} required />
+          </InputWrapper>
 
-        <InputWrapper>
-          <Label>Email</Label>
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} />
-        </InputWrapper>
+          <InputWrapper>
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </InputWrapper>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <Button variant="secondary" fullWidth onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button fullWidth loading={loading} onClick={save}>
-            Salvar
-          </Button>
-        </div>
+          <InputWrapper>
+            <Label>Telefone</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </InputWrapper>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+            <Button type="button" variant="secondary" fullWidth onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit" fullWidth loading={loading}>
+              Salvar
+            </Button>
+          </div>
+        </form>
       </ModalBox>
     </Overlay>
   );

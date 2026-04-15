@@ -126,6 +126,7 @@ interface Student {
   id: string;
   name: string;
   email?: string;
+  phone?: string;
   status: "ACTIVE" | "INACTIVE";
   accessCode: string;
 }
@@ -138,6 +139,7 @@ const Students: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   /* ===== LÓGICA ORIGINAL (NÃO ALTERADA) ===== */
@@ -159,13 +161,23 @@ const Students: React.FC = () => {
       await api.post("/students", {
         name,
         email: email || undefined,
+        phone: phone || undefined,
       });
       setShowModal(false);
       setName("");
       setEmail("");
+      setPhone("");
       fetchStudents();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteStudent = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("Certeza que deseja excluir este aluno?")) {
+      await api.delete(`/students/${id}`);
+      fetchStudents();
     }
   };
 
@@ -192,6 +204,7 @@ const Students: React.FC = () => {
               <div>
                 <Name>{s.name}</Name>
                 <Email>{s.email || "Sem email"}</Email>
+                {s.phone && <Email style={{marginTop: -8}}>Tel: {s.phone}</Email>}
               </div>
               <Badge active={s.status === "ACTIVE"}>
                 {s.status === "ACTIVE" ? "Ativo" : "Inativo"}
@@ -201,6 +214,11 @@ const Students: React.FC = () => {
             <CodeBox>
               Código de acesso: {s.accessCode}
             </CodeBox>
+            <div style={{ marginTop: 12 }}>
+              <Button size="sm" variant="secondary" style={{ background: "#fee2e2", color: "#dc2626", borderColor: "#fca5a5" }} onClick={(e) => deleteStudent(s.id, e)}>
+                Excluir
+              </Button>
+            </div>
           </StudentCard>
         ))}
       </Grid>
@@ -235,6 +253,15 @@ const Students: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@exemplo.com"
+                />
+              </InputWrapper>
+
+              <InputWrapper>
+                <Label>Telefone (opcional)</Label>
+                <Input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
               </InputWrapper>
 
