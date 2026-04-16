@@ -133,11 +133,30 @@ const SidebarBottomBtn = styled.button`
   }
 `;
 
-const DesktopContent = styled.main`
+const DesktopContent = styled.main<{ $bg?: string }>`
   flex: 1;
   padding: 32px;
   max-width: 860px;
   width: 100%;
+  position: relative;
+  z-index: 0;
+
+  ${({ $bg }) =>
+    $bg &&
+    `
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-image: url(${$bg});
+        background-repeat: no-repeat;
+        background-position: center top 120px;
+        background-size: 280px auto;
+        opacity: 0.05;
+        pointer-events: none;
+      }
+    `}
 `;
 
 const MobileOnly = styled.div`
@@ -210,7 +229,7 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({
             </SidebarBottomBtn>
           </SidebarBottom>
         </DesktopSidebar>
-        <DesktopContent>{children}</DesktopContent>
+        <DesktopContent $bg={logo || undefined}>{children}</DesktopContent>
       </DesktopShell>
 
       {/* MOBILE */}
