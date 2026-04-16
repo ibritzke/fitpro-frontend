@@ -10,6 +10,7 @@ interface Props {
     name: string;
     email?: string;
     phone?: string;
+    expiresAt?: string;
   };
   onClose: () => void;
   onSaved: () => void;
@@ -23,18 +24,22 @@ export const EditStudentModal = ({
   const [name, setName] = useState(student.name);
   const [email, setEmail] = useState(student.email || "");
   const [phone, setPhone] = useState(student.phone || "");
+  const [expiresAt, setExpiresAt] = useState(
+    student.expiresAt ? new Date(student.expiresAt).toISOString().split("T")[0] : ""
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setName(student.name);
     setEmail(student.email || "");
     setPhone(student.phone || "");
+    setExpiresAt(student.expiresAt ? new Date(student.expiresAt).toISOString().split("T")[0] : "");
   }, [student]);
 
   const save = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setLoading(true);
-    await api.patch(`/students/${student.id}`, { name, email, phone });
+    await api.patch(`/students/${student.id}`, { name, email, phone, expiresAt: expiresAt || null });
     setLoading(false);
     onSaved();
     onClose();
@@ -59,6 +64,11 @@ export const EditStudentModal = ({
           <InputWrapper>
             <Label>Telefone</Label>
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </InputWrapper>
+
+          <InputWrapper>
+            <Label>Data de Vencimento (Opcional)</Label>
+            <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
           </InputWrapper>
 
           <div style={{ display: "flex", gap: 10, marginTop: 10 }}>

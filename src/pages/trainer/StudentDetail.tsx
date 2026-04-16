@@ -133,6 +133,7 @@ interface Student {
   phone?: string;
   accessCode: string;
   status: string;
+  expiresAt?: string | null;
 }
 
 /* ================= COMPONENT ================= */
@@ -213,8 +214,29 @@ const StudentDetail: React.FC = () => {
     }
   };
 
+  const renewStudent = async (days: number) => {
+    try {
+      await api.patch(`/students/${id}/renew`, { days });
+      await fetchAll();
+    } catch {
+      alert("Erro ao renovar aluno.");
+    }
+  };
+
+  const toggleStatus = async () => {
+    try {
+      await api.patch(`/students/${id}/status`);
+      await fetchAll();
+    } catch {
+      alert("Erro ao inativar/ativar.");
+    }
+  };
+
   if (!student)
     return <div style={{ padding: 32, color: "#888" }}>Carregando...</div>;
+
+  const isExpired = student.expiresAt ? new Date(student.expiresAt) < new Date() : false;
+  const statusColor = student.status === "ACTIVE" && !isExpired ? "#059669" : "#dc2626";
 
   return (
     <div>
@@ -223,52 +245,57 @@ const StudentDetail: React.FC = () => {
       <PageTitle>{student.name}</PageTitle>
       <SubInfo>
         {student.email || "Sem email"} ·{" "}
-        {student.status === "ACTIVE" ? "Ativo" : "Inativo"}
+        <span style={{ color: statusColor, fontWeight: 600 }}>
+          {student.status === "INACTIVE" 
+            ? "Inativo" 
+            : isExpired ? "Acesso Expirado" : "Ativo"}
+        </span>
         {student.phone && ` · Tel: ${student.phone}`}
       </SubInfo>
 
-      <CodeBox>
-        <CodeLabel>Código de acesso atual</CodeLabel>
-        <CodeValue>{student.accessCode}</CodeValue>
-
-        <CodeLabel style={{ marginTop: 10 }}>
-          Definir código personalizado
-        </CodeLabel>
-
-        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-          <Input
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            placeholder="ex: joao123 ou 1234"
-            style={{ maxWidth: 220 }}
-          />
-          <Button size="sm" onClick={savePin} loading={pinLoading}>
-            Salvar
-          </Button>
-
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setEditing(true)}
-          >
-            Editar aluno
-          </Button>
-        </div>
-
-        {pinMsg && (
-          <p
-            style={{
-              fontSize: 12,
-              marginTop: 6,
-              color: pinMsg.includes("sucesso") ? "#059669" : "#dc2626",
-            }}
-          >
-            {pinMsg}
-          </p>
-        )}
-      </CodeBox>
-
       <Grid>
+        <CodeBox style={{ marginBottom: 0 }}>
+          <CodeLabel>Código de Acesso</CodeLabel>
+          <CodeValue>{student.accessCode}</CodeValue>
+
+          <CodeLabel style={{ marginTop: 10 }}>Mudar código</CodeLabel>
+          <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+            <Input
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              placeholder="Ex: 1234"
+              style={{ maxWidth: 120 }}
+            />
+            <Button size="sm" onClick={savePin} loading={pinLoading}>Salvar</Button>
+            <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>Editar Perfil</Button>
+            <Button 
+              size="sm" 
+              variant="danger" 
+              onClick={toggleStatus}
+            >
+              {student.status === "ACTIVE" ? "Bloquear" : "Desbloquear"}
+            </Button>
+          </div>
+          {pinMsg && <p style={{ fontSize: 12, marginTop: 6 }}>{pinMsg}</p>}
+        </CodeBox>
+
+        <CodeBox style={{ marginBottom: 0 }}>
+          <CodeLabel>Validade do Acesso</CodeLabel>
+          <CodeValue>
+            {student.expiresAt 
+              ? new Date(student.expiresAt).toLocaleDateString("pt-BR") 
+              : "Vitalício (Sem limite)"}
+          </CodeValue>
+
+          <CodeLabel style={{ marginTop: 10 }}>Estender acesso</CodeLabel>
+          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+            <Button size="sm" onClick={() => renewStudent(15)}>+ 15 Dias</Button>
+            <Button size="sm" onClick={() => renewStudent(30)}>+ 30 Dias</Button>
+          </div>
+        </CodeBox>
+      </Grid>
+
+      <Grid style={{ marginTop: 20 }}>
         <Card>
           <CardHeader>
             <CardTitle>Semana de treinos</CardTitle>
