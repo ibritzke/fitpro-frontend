@@ -135,29 +135,47 @@ const Categories: React.FC = () => {
 
   const createCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    await api.post("/categories", { name: catName });
-    setCatName("");
-    fetchAll();
+    try {
+      await api.post("/categories", { name: catName });
+      setCatName("");
+      fetchAll();
+    } catch (err) {
+      alert("Erro ao criar categoria. Tente novamente.");
+    }
   };
 
   const createSubcategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    await api.post("/subcategories", {
-      name: subName,
-      categoryId: selectedCat,
-    });
-    setSubName("");
-    fetchSubs(selectedCat);
+    try {
+      await api.post("/subcategories", {
+        name: subName,
+        categoryId: selectedCat,
+      });
+      setSubName("");
+      fetchSubs(selectedCat);
+    } catch (err) {
+      alert("Erro ao criar subcategoria. Tente novamente.");
+    }
   };
 
   const deleteCategory = async (id: string) => {
-    await api.delete(`/categories/${id}`);
-    fetchAll();
+    if (!confirm("Excluir esta categoria?")) return;
+    try {
+      await api.delete(`/categories/${id}`);
+      fetchAll();
+    } catch (err) {
+      alert("Erro ao excluir categoria. Tente novamente.");
+    }
   };
 
   const deleteSubcategory = async (id: string) => {
-    await api.delete(`/subcategories/${id}`);
-    if (selectedCat) fetchSubs(selectedCat);
+    if (!confirm("Excluir esta subcategoria?")) return;
+    try {
+      await api.delete(`/subcategories/${id}`);
+      if (selectedCat) fetchSubs(selectedCat);
+    } catch (err) {
+      alert("Erro ao excluir subcategoria. Tente novamente.");
+    }
   };
 
   /* ===================== JSX ===================== */

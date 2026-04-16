@@ -14,7 +14,7 @@ export const ThemeContext = createContext<ThemeContextData>({} as ThemeContextDa
 export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isDark, setIsDark] = useState<boolean>(() => {
     const stored = localStorage.getItem("fitpro_theme");
-    return stored ? stored === "dark" : true;
+    return stored ? stored === "dark" : false;
   });
 
   useEffect(() => {

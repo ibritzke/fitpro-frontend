@@ -202,6 +202,8 @@ const Exercises: React.FC = () => {
       setCategoryId("");
       setSubcategoryId("");
       fetchExercises();
+    } catch (err) {
+      alert("Erro ao criar exercício. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -209,8 +211,12 @@ const Exercises: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Excluir este exercício?")) return;
-    await api.delete(`/exercises/${id}`);
-    fetchExercises();
+    try {
+      await api.delete(`/exercises/${id}`);
+      fetchExercises();
+    } catch (err) {
+      alert("Erro ao excluir exercício. Tente novamente.");
+    }
   };
 
   /* ===================== JSX ===================== */

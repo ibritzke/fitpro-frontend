@@ -203,6 +203,8 @@ const WorkoutTypes: React.FC = () => {
       setTypeName("");
       setShowNewType(false);
       fetch();
+    } catch (err) {
+      alert("Erro ao criar tipo de treino. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -235,6 +237,8 @@ const WorkoutTypes: React.FC = () => {
       setVideoUrl("");
 
       fetch();
+    } catch (err) {
+      alert("Erro ao adicionar exercício. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -242,14 +246,22 @@ const WorkoutTypes: React.FC = () => {
 
   const removeExercise = async (id: string) => {
     if (!confirm("Remover exercício?")) return;
-    await api.delete(`/workout-types/exercises/${id}`);
-    fetch();
+    try {
+      await api.delete(`/workout-types/exercises/${id}`);
+      fetch();
+    } catch (err) {
+      alert("Erro ao remover exercício. Tente novamente.");
+    }
   };
 
   const deleteType = async (id: string) => {
     if (!confirm("Excluir tipo de treino?")) return;
-    await api.delete(`/workout-types/${id}`);
-    fetch();
+    try {
+      await api.delete(`/workout-types/${id}`);
+      fetch();
+    } catch (err) {
+      alert("Erro ao excluir tipo de treino. Tente novamente.");
+    }
   };
 
   /* ================= JSX ================= */
