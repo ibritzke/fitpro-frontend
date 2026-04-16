@@ -110,7 +110,7 @@ const StudentHome = () => {
   useEffect(() => {
     if (!user) return;
 
-    api.get(`/history/student/${user.id}`).then((res) => {
+    api.get(`/history/${user.id}`).then((res) => {
       setHistory(res.data);
     });
 

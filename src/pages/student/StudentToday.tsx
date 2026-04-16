@@ -173,7 +173,7 @@ const StudentToday: React.FC = () => {
     if (!user) return;
 
     api
-      .get(`/history`)
+      .get(`/history/${user.id}`)
       .then((res) => {
         const today = new Date().toDateString();
 

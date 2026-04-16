@@ -112,9 +112,9 @@ const StudentWeek: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   useEffect(() => {
     if (!user) return;
-    api.get("/history?days=7").then((res) => setHistory(res.data));
+    api.get(`/history/${user.id}?days=7`).then((res) => setHistory(res.data));
     api
-      .get(`/student-workouts/week/${user.id}`)
+      .get(`/student-workouts/schedule/${user.id}`)
       .then((res) => setWeek(res.data))
       .catch(() => setWeek([]));
   }, [user]);
