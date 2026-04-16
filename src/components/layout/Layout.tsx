@@ -54,11 +54,6 @@ const Main = styled.main`
 export const Layout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  /**
-   * Estado já preparado para Sidebar mobile (drawer).
-   * Mesmo que hoje não esteja usando,
-   * evita refactor grande depois.
-   */
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -67,13 +62,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
 
       <ContentWrapper>
         <Header
-          title="Painel Admin"
           onMenuClick={() => setIsSidebarOpen(true)}
         />
         <Main>{children}</Main>
       </ContentWrapper>
 
-      {/* ✅ MENU INFERIOR PARA MOBILE */}
+      {/* Menu inferior somente no mobile */}
       <BottomNav />
     </LayoutContainer>
   );

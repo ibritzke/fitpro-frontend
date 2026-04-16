@@ -1,17 +1,31 @@
 import React from "react";
 import styled from "styled-components";
 import { Avatar } from "../ui/Avatar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+
 interface HeaderProps {
   title?: string;
   onMenuClick: () => void;
 }
 
+const ROUTE_TITLES: Record<string, string> = {
+  "/admin/dashboard": "Dashboard",
+  "/admin/trainers": "Personais",
+  "/trainer/dashboard": "Dashboard",
+  "/trainer/students": "Alunos",
+  "/trainer/categories": "Categorias",
+  "/trainer/exercises": "Exercícios",
+  "/trainer/workout-types": "Tipos de Treino",
+  "/trainer/templates": "Templates",
+  "/trainer/training": "Treinos",
+  "/account": "Minha conta",
+};
+
 const HeaderContainer = styled.header`
   height: 56px;
   background: ${({ theme }) => theme.bg.primary};
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${({ theme }) => theme.border.light};
 
   display: flex;
   align-items: center;
@@ -38,7 +52,8 @@ const MenuButton = styled.button`
   cursor: pointer;
   padding: 4px;
 
-  @media (max-width: 768px) {
+  /* Hamburger only on mobile */
+  @media (min-width: 769px) {
     display: none;
   }
 `;
@@ -57,17 +72,16 @@ const Right = styled.div`
 export const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const resolvedTitle = title ?? ROUTE_TITLES[location.pathname] ?? "FitPro";
 
   const handleAvatarClick = () => {
     if (!user) return;
-
-    // ✅ ALUNO vai para o perfil
     if (user.role === "STUDENT") {
       navigate("/student/profile");
       return;
     }
-
-    // ✅ ADMIN / TRAINER vão para conta
     navigate("/account");
   };
 
@@ -75,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onMenuClick }) => {
     <HeaderContainer>
       <Left>
         <MenuButton onClick={onMenuClick}>☰</MenuButton>
-        {title && <Title>{title}</Title>}
+        <Title>{resolvedTitle}</Title>
       </Left>
 
       <Right>
