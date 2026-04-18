@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { api } from "../services/api";
 
-interface User {
-  id: string;
-  name: string;
-  email?: string;
-  role: "ADMIN" | "TRAINER" | "STUDENT";
-  photoUrl?: string;
-  logoUrl?: string;
-}
-
-
 export type UserRole = "ADMIN" | "TRAINER" | "STUDENT";
 
 export interface AuthUser {
@@ -18,6 +8,8 @@ export interface AuthUser {
   name: string;
   role: UserRole;
   email?: string;
+  photoUrl?: string;
+  logoUrl?: string;
   trainerId?: string;
 }
 
@@ -29,28 +21,32 @@ interface AuthContextData {
   login: (email: string, password: string) => Promise<void>;
   studentLogin: (code: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshUser = async () => {
+    try {
+      const res = await api.get("/auth/me");
+      setUser(res.data);
+    } catch (error) {
+      console.error("Erro ao atualizar dados do usuário:", error);
+    }
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("fitpro_token");
     if (storedToken) {
       api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
       setToken(storedToken);
-      api.get("/auth/me")
-        .then((res) => setUser(res.data))
-        .catch(() => {
-          // eslint-disable-next-line react-hooks/immutability
-          logout();
-        })
-        .finally(() => setLoading(false));
+      refreshUser().finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
@@ -85,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, studentLogin, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, studentLogin, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

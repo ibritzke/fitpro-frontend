@@ -10,7 +10,7 @@ interface Props {
     name: string;
     email?: string;
     phone?: string;
-    expiresAt?: string;
+    expiresAt?: string | null;
   };
   onClose: () => void;
   onSaved: () => void;

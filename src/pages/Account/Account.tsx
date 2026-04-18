@@ -97,10 +97,10 @@ export const Account: React.FC = () => {
             ref={fileInputRef}
             onChange={handleLogoUpload}
           />
-          {user.logoUrl && !uploading && (
+          {user?.logoUrl && !uploading && (
             <UploadPreview>
               <img
-                src={import.meta.env.VITE_API_URL + user.logoUrl}
+                src={import.meta.env.VITE_API_URL + user?.logoUrl}
                 alt="Logo do Personal"
                 style={{ maxWidth: "100%", maxHeight: 120, borderRadius: 8, marginTop: 10, opacity: 0.5 }}
               />
